@@ -2,12 +2,11 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <fstream>
-#include <filesystem>
+
 #include "SpacecraftConfig.h"
 #include "Dynamics.h"
 
 using namespace std;
-namespace fs = std::filesystem;
 
 struct StateRecord {
     double time;
