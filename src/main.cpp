@@ -1,3 +1,25 @@
+// 6dof Spacecraft Landing Simulator
+// By Jervis Benjamin
+// Started September 1st 2025
+
+/*
+
+Major TODOs:
+
+Physics:
+- make the world/planet round
+- integrate mass depletion and fix angular velocity calcs to account for changing MoI
+- verify what frames values are in reference to (for example, if omega is in body or inertial)
+
+Controls:
+- integrate controller
+
+SimVis:
+- Create 3d viewer
+
+*/
+
+
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>

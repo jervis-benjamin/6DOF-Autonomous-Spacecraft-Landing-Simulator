@@ -6,6 +6,111 @@
 using namespace std;
 
 class Dynamics {
+
+private:
+    struct StateDerivative {
+        Eigen::Vector3d positionDot;
+        Eigen::Vector3d velocityDot;
+        Eigen::Vector4d orientationDot;
+        Eigen::Vector3d angularVelocityDot;
+
+        StateDerivative operator+(const StateDerivative& other) const {
+            StateDerivative result;
+            result.positionDot = positionDot + other.positionDot;
+            result.velocityDot = velocityDot + other.velocityDot;
+            result.orientationDot = orientationDot + other.orientationDot;
+            result.angularVelocityDot = angularVelocityDot + other.angularVelocityDot;
+            return result;
+        }
+
+        StateDerivative operator*(double scalar) const {
+            StateDerivative result;
+            result.positionDot = positionDot * scalar;
+            result.velocityDot = velocityDot * scalar;
+            result.orientationDot = orientationDot * scalar;
+            result.angularVelocityDot = angularVelocityDot * scalar;
+            return result;
+        }
+    };
+
+    StateDerivative computeDerivatives(const Eigen::Vector3d& pos, const Eigen::Vector3d& vel, const Eigen::Vector4d& quat, const Eigen::Vector3d& angVel, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) const {
+        
+        StateDerivative deriv;
+
+        deriv.positionDot = vel;
+
+        Eigen::Vector3d weight(0.0, 0.0, -config.gravity * config.mass);
+        Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(quat, bodyForce);
+        Eigen::Vector3d totalForce = forceInertial + weight;
+        deriv.velocityDot = totalForce / config.mass;
+
+        deriv.orientationDot = QuaternionTools::derivative(quat, angVel);
+
+        Eigen::Vector3d Iw = config.inertiaTensor * angVel;
+        Eigen::Vector3d omegaCrossIw = angVel.cross(Iw);
+        Eigen::Vector3d IwDot = bodyTorque - omegaCrossIw;
+        Eigen::Vector3d angularAccel;
+        angularAccel(0) = IwDot(0) / config.inertiaTensor(0,0);
+        angularAccel(1) = IwDot(1) / config.inertiaTensor(1,1);
+        angularAccel(2) = IwDot(2) / config.inertiaTensor(2,2);
+        deriv.angularVelocityDot = angularAccel;
+
+        return deriv;
+    }
+
+    void integrateRK4(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {
+        StateDerivative k1 = computeDerivatives(
+            position, velocity, orientation, angularVelocity, 
+            bodyForce, bodyTorque);
+
+        Eigen::Vector3d pos2 = position + k1.positionDot * (0.5 * dt);
+        Eigen::Vector3d vel2 = velocity + k1.velocityDot * (0.5 * dt);
+        Eigen::Vector4d quat2 = orientation + k1.orientationDot * (0.5 * dt);
+        QuaternionTools::normalize(quat2);
+        Eigen::Vector3d angVel2 = angularVelocity + k1.angularVelocityDot * (0.5 * dt);
+        
+        StateDerivative k2 = computeDerivatives(
+            pos2, vel2, quat2, angVel2, 
+            bodyForce, bodyTorque);
+
+        Eigen::Vector3d pos3 = position + k2.positionDot * (0.5 * dt);
+        Eigen::Vector3d vel3 = velocity + k2.velocityDot * (0.5 * dt);
+        Eigen::Vector4d quat3 = orientation + k2.orientationDot * (0.5 * dt);
+        QuaternionTools::normalize(quat3);
+        Eigen::Vector3d angVel3 = angularVelocity + k2.angularVelocityDot * (0.5 * dt);
+        
+        StateDerivative k3 = computeDerivatives(
+            pos3, vel3, quat3, angVel3, 
+            bodyForce, bodyTorque);
+
+        Eigen::Vector3d pos4 = position + k3.positionDot * dt;
+        Eigen::Vector3d vel4 = velocity + k3.velocityDot * dt;
+        Eigen::Vector4d quat4 = orientation + k3.orientationDot * dt;
+        QuaternionTools::normalize(quat4);
+        Eigen::Vector3d angVel4 = angularVelocity + k3.angularVelocityDot * dt;
+        
+        StateDerivative k4 = computeDerivatives(
+            pos4, vel4, quat4, angVel4, 
+            bodyForce, bodyTorque);
+
+        position += (k1.positionDot + k2.positionDot * 2.0 + k3.positionDot * 2.0 + k4.positionDot) * (dt / 6.0);
+        velocity += (k1.velocityDot + k2.velocityDot * 2.0 + k3.velocityDot * 2.0 + k4.velocityDot) * (dt / 6.0);
+        orientation += (k1.orientationDot + k2.orientationDot * 2.0 + k3.orientationDot * 2.0 + k4.orientationDot) * (dt / 6.0);
+        angularVelocity += (k1.angularVelocityDot + k2.angularVelocityDot * 2.0 + k3.angularVelocityDot * 2.0 + k4.angularVelocityDot) * (dt / 6.0);
+
+        QuaternionTools::normalize(orientation);
+    }
+
+    void handleCollisions() { 
+        if (position.z() < 0.0) {
+            position.z() = 0;
+            velocity.z() = 0;
+            velocity.x() = 0;
+            velocity.y() = 0;
+            //cout collision state for testing
+        }
+    }
+
 public:
     SpacecraftConfig config;
     Eigen::Vector3d position;
@@ -22,43 +127,7 @@ public:
     }
 
     void update(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {
-        Eigen::Vector3d gravity(0.0, 0.0, -config.gravity * config.mass);
-
-        Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(orientation, bodyForce);
-
-        Eigen::Vector3d totalForce = forceInertial + gravity;
-        Eigen::Vector3d acceleration = totalForce / config.mass;
-
-        velocity += acceleration * dt;
-        position += velocity * dt;
-
-        if (position.z() < 0.0) {
-            position.z() = 0; //preventing spacecraft from clipping the floor
-            velocity.z() = 0;
-            velocity.x() /= 2; // TODO: implement more realistic lateral velocity reduction
-            velocity.y() /= 2;
-            if (velocity.x() < 1e-5){
-                velocity.x() = 0;
-            }
-            if (velocity.y() < 1e-5){
-                velocity.y() = 0;
-            }
-        }
-        
-
-        Eigen::Vector3d Iw = config.inertiaTensor * angularVelocity;
-        Eigen::Vector3d omegaCrossIw = angularVelocity.cross(Iw);
-        Eigen::Vector3d angularAccel = bodyTorque - omegaCrossIw;
-        angularAccel(0) /= config.inertiaTensor(0,0);
-        angularAccel(1) /= config.inertiaTensor(1,1);
-        angularAccel(2) /= config.inertiaTensor(2,2);
-
-        angularVelocity += angularAccel * dt;
-
-        Eigen::Vector4d qDot = QuaternionTools::derivative(orientation, angularVelocity);
-
-        orientation += qDot * dt;
-
-        QuaternionTools::normalize(orientation);
+        integrateRK4(dt, bodyForce, bodyTorque);
+        handleCollisions();
     }
 };

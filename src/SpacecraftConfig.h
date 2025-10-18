@@ -18,7 +18,7 @@ struct SpacecraftConfig {
         inertiaTensor(0,0) = 500.0;
         inertiaTensor(1,1) = 700.0;
         inertiaTensor(2,2) = 300.0;
-        gravity = 9.81; // m/s^2
+        gravity = 1.62; // m/s^2
         initialPosition << 50, 0.0, 100;
         initialVelocity << 1200, 30, 0.0;
         initialOrientation << 1.0, 0.0, 0.0, 0.0;
