@@ -1,7 +1,7 @@
 # Overview 
 Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criterion and testing controller performance for thrust vector control (TVC), reaction control system (RCS), and propulsion.
 
-# Project Breakdown
+## Project Breakdown
 - Physics:
   - 6dof dynamics to calculate the spacecrafts state over time
   - _Programmed in C++_
@@ -24,3 +24,4 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 9) Update visualization tool to accommodate for rotating spherical world 
 10) Integrate controller (PID -> LQR -> MPC)
  
+
