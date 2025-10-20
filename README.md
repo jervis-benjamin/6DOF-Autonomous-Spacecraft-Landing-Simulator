@@ -3,7 +3,7 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 
 ## Project Breakdown
 - Physics:
-  - 6dof dynamics to calculate the spacecrafts state over time
+  - 6dof dynamics to calculate the spacecraft's state over time
   - _Programmed in C++_
 - Controls:
   - Logic that takes in state conditions and outputs force values to keep the spacecraft within trajectory and landing contraints
@@ -24,4 +24,5 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 9) Update visualization tool to accommodate for rotating spherical world 
 10) Integrate controller (PID -> LQR -> MPC)
  
+
 
