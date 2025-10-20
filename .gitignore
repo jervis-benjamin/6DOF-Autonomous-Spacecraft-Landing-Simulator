@@ -3,3 +3,4 @@
 *.exe
 *.ipynb
 .vscode/
+.experimental/
