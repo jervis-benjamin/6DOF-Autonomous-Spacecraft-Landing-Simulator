@@ -1,26 +1,15 @@
 // 6dof Spacecraft Landing Simulator
 // By Jervis Benjamin
-// Started September 1st 2025
+// Started September 2025
 
 /*
 
-testing workspace
-
-Major TODOs:
-
-Physics:
-- make the world/planet round
-- integrate mass depletion and fix angular velocity calcs to account for changing MoI
-- verify what frames values are in reference to (for example, if omega is in body or inertial)
-
-Controls:
-- integrate controller
-
-SimVis:
-- Create 3d viewer
+TODOs:
+- output pitch roll and yaw
+- Make spacecraft initially aligned horizontal 
+- integrate mass depletion and thrust mechanics
 
 */
-
 
 #include <iostream>
 #include <vector>
@@ -29,6 +18,7 @@ SimVis:
 
 #include "SpacecraftConfig.h"
 #include "Dynamics.h"
+#include "World.h"
 
 using namespace std;
 
@@ -41,19 +31,21 @@ struct StateRecord {
 };
 
 int main() {
+    World world = World::Earth();
     SpacecraftConfig config;
-    Dynamics dynamics(config);
+    Dynamics dynamics(config, world);
 
-    const double dt = 0.01;
-    const double tEnd = 10.0;
-    double t = 0.0;
+    const double dt = 0.01; // s
+    const double tEnd = 60.0; // s
+    double t = 0.0; // s
 
     vector<StateRecord> simData;
 
     Eigen::Vector3d testForce(0, 0, 0);
-    Eigen::Vector3d testTorque(0, 0, 0);
+    Eigen::Vector3d testTorque(50000, 0, 0);
 
-    while (t <= tEnd) {
+    while (t <= tEnd && !dynamics.landed) {
+    //while (t <= tEnd) {    
         dynamics.update(dt, testForce, testTorque);
 
         StateRecord record;
@@ -74,9 +66,20 @@ int main() {
              << endl;
 
         t += dt;
+
+        if (dynamics.landed){
+            cout << "\n\n=== LANDING DETECTED ===" << endl;
+            cout << "Time at landing: " << t << " s" << endl;
+            cout << "Final speed: " << dynamics.impactVelocity << " m/s" << endl;
+            }
     }
 
-    ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
+    if (!dynamics.landed){
+            cout << "\n\n=== MAX TIME REACHED ===" << endl;
+            cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
+            }
+
+    ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
     outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ\n";    
     for (const auto& rec : simData) {

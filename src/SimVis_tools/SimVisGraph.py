@@ -1,9 +1,12 @@
+# SimVisGraph
+# Used for outputting trajectory data on graphs
+
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-simData = pd.read_csv('simulation_data.csv') # time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ
+simData = pd.read_csv('../simulation_data.csv') # time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ
 
 time = simData['time'].tolist()
 
@@ -22,7 +25,7 @@ quatZ = simData['quatZ'].tolist()
 
 omegX = simData['omegX'].tolist()
 omegY = simData['omegY'].tolist()
-omegY = simData['omegY'].tolist()
+omegZ = simData['omegZ'].tolist()
 
 plt.plot(time, posZ)
 plt.xlabel('Time (s)')

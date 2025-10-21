@@ -3,11 +3,14 @@
 #include <Eigen/Dense>
 #include "SpacecraftConfig.h"
 #include "QuaternionTools.h"
+#include "World.h"
 using namespace std;
 
 class Dynamics {
 
 private:
+    World world;
+
     struct StateDerivative {
         Eigen::Vector3d positionDot;
         Eigen::Vector3d velocityDot;
@@ -33,13 +36,15 @@ private:
         }
     };
 
+
+    
     StateDerivative computeDerivatives(const Eigen::Vector3d& pos, const Eigen::Vector3d& vel, const Eigen::Vector4d& quat, const Eigen::Vector3d& angVel, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) const {
         
         StateDerivative deriv;
 
         deriv.positionDot = vel;
 
-        Eigen::Vector3d weight(0.0, 0.0, -config.gravity * config.mass);
+        Eigen::Vector3d weight(0.0, 0.0, -world.getGravitationalAccel(pos.z()) * config.mass);
         Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(quat, bodyForce);
         Eigen::Vector3d totalForce = forceInertial + weight;
         deriv.velocityDot = totalForce / config.mass;
@@ -49,11 +54,7 @@ private:
         Eigen::Vector3d Iw = config.inertiaTensor * angVel;
         Eigen::Vector3d omegaCrossIw = angVel.cross(Iw);
         Eigen::Vector3d IwDot = bodyTorque - omegaCrossIw;
-        Eigen::Vector3d angularAccel;
-        angularAccel(0) = IwDot(0) / config.inertiaTensor(0,0);
-        angularAccel(1) = IwDot(1) / config.inertiaTensor(1,1);
-        angularAccel(2) = IwDot(2) / config.inertiaTensor(2,2);
-        deriv.angularVelocityDot = angularAccel;
+        deriv.angularVelocityDot = config.inertiaTensor.inverse() * IwDot;
 
         return deriv;
     }
@@ -104,10 +105,10 @@ private:
     void handleCollisions() { 
         if (position.z() < 0.0) {
             position.z() = 0;
-            velocity.z() = 0;
-            velocity.x() = 0;
-            velocity.y() = 0;
-            //cout collision state for testing
+            impactVelocity = velocity.norm();
+            velocity.setZero();
+            angularVelocity.setZero();
+            landed = true;
         }
     }
 
@@ -117,13 +118,17 @@ public:
     Eigen::Vector3d velocity;
     Eigen::Vector4d orientation;
     Eigen::Vector3d angularVelocity;
+    bool landed;
+    double impactVelocity;
 
-    Dynamics(const SpacecraftConfig& cfg) {
+    Dynamics(const SpacecraftConfig& cfg, const World& w) : world(w){
         config = cfg;
         position = cfg.initialPosition;
         velocity = cfg.initialVelocity;
         orientation = cfg.initialOrientation;
         angularVelocity = cfg.initialAngularVelocity;
+        landed = false;
+        impactVelocity = 9999999;
     }
 
     void update(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {
