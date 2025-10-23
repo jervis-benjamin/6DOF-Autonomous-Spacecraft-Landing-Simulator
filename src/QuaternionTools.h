@@ -42,4 +42,28 @@ public:
         Eigen::Vector4d rotatedQuat = multiply(multiply(q, vQuat), qInv);
         return Eigen::Vector3d(rotatedQuat(1), rotatedQuat(2), rotatedQuat(3));
     }
+
+    static Eigen::Vector3d toEulerAngles(const Eigen::Vector4d& quat){
+        // using the Yaw-Pitch-Roll convention for transformation
+        // returns orientation in euler angles (in degrees)
+
+        double w = quat(0), x = quat(1), y = quat(2), z = quat(3);
+        Eigen::Vector3d eulerAngles;
+
+        // for roll:
+        eulerAngles(0) = atan2( 2*(w*x + y*z), 1 - 2*(x*x + y*y));
+
+        // for pitch:
+        double sin_pitch = 2 * (w*y - z*x);
+        if (abs(sin_pitch) >= 1)
+            eulerAngles(1) = copysign(M_PI/2, sin_pitch); 
+        else
+            eulerAngles(1) = asin(sin_pitch);
+        
+        // for yaw:
+        eulerAngles(2) = ( 2*(w*z + x*y), 1 - 2*(y*y + z*z) );
+        
+
+        return eulerAngles * (180/M_PI); // return in degrees (roll, pitch, yaw)
+    }
 };

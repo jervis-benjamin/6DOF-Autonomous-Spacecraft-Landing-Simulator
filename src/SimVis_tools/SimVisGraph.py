@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-simData = pd.read_csv('../simulation_data.csv') # time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ
+simData = pd.read_csv('simulation_data.csv') # time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ
 
 time = simData['time'].tolist()
 
@@ -27,7 +27,11 @@ omegX = simData['omegX'].tolist()
 omegY = simData['omegY'].tolist()
 omegZ = simData['omegZ'].tolist()
 
-plt.plot(time, posZ)
+roll = simData['roll'].tolist()
+pitch = simData['pitch'].tolist()
+yaw = simData['yaw'].tolist()
+
+plt.plot(time, roll)
 plt.xlabel('Time (s)')
 plt.ylabel('Z Position (m)')
 plt.title('Z Position vs Time')
