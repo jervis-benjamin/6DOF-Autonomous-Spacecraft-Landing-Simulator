@@ -61,9 +61,56 @@ public:
             eulerAngles(1) = asin(sin_pitch);
         
         // for yaw:
-        eulerAngles(2) = ( 2*(w*z + x*y), 1 - 2*(y*y + z*z) );
+        eulerAngles(2) = atan2( 2*(w*z + x*y), 1 - 2*(y*y + z*z) );
         
 
         return eulerAngles * (180/M_PI); // return in degrees (roll, pitch, yaw)
+    }
+
+    static Eigen::Vector4d RotationMatrixToQuat(const Eigen::Matrix3d& R) {
+        // converting rotation matrix to a quaternion
+
+        Eigen::Vector4d q;
+        double trace = R.trace();
+        
+        if (trace > 0) {
+            double s = 0.5 / sqrt(trace + 1.0);
+            q(0) = 0.25 / s;                   
+            q(1) = (R(2,1) - R(1,2)) * s;      
+            q(2) = (R(0,2) - R(2,0)) * s;      
+            q(3) = (R(1,0) - R(0,1)) * s;      
+        } else if (R(0,0) > R(1,1) && R(0,0) > R(2,2)) {
+            double s = 2.0 * sqrt(1.0 + R(0,0) - R(1,1) - R(2,2));
+            q(0) = (R(2,1) - R(1,2)) / s;      
+            q(1) = 0.25 * s;                   
+            q(2) = (R(0,1) + R(1,0)) / s;      
+            q(3) = (R(0,2) + R(2,0)) / s;      
+        } else if (R(1,1) > R(2,2)) {
+            double s = 2.0 * sqrt(1.0 + R(1,1) - R(0,0) - R(2,2));
+            q(0) = (R(0,2) - R(2,0)) / s;      
+            q(1) = (R(0,1) + R(1,0)) / s;      
+            q(2) = 0.25 * s;                   
+            q(3) = (R(1,2) + R(2,1)) / s;      
+        } else {
+            double s = 2.0 * sqrt(1.0 + R(2,2) - R(0,0) - R(1,1));
+            q(0) = (R(1,0) - R(0,1)) / s;      
+            q(1) = (R(0,2) + R(2,0)) / s;      
+            q(2) = (R(1,2) + R(2,1)) / s;      
+            q(3) = 0.25 * s;            
+        }
+        
+        return q;
+    }
+
+    static Eigen::Vector4d AxisAngleToQuat(const Eigen::Vector3d& axis, double angle) {
+        // converting axis-angle to quaternion
+        
+        Eigen::Vector4d quat;
+        quat(0) = cos(angle/2);              
+        quat(1) = axis(0) * sin(angle/2);                  
+        quat(2) = axis(1) * sin(angle/2);                  
+        quat(3) = axis(2) * sin(angle/2);                  
+        
+        return quat;
     }
 };

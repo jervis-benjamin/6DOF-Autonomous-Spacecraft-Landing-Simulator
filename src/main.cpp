@@ -41,11 +41,11 @@ int main() {
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(0, 0, 1000);
-    Eigen::Vector3d testTorque(1, 2, 0);
+    Eigen::Vector3d testForce(50000, 0, 0);
+    Eigen::Vector3d testTorque(0, 0, 0);
 
-    while (t <= tEnd && !dynamics.landed) {
-    //while (t <= tEnd) {    
+    //while (t <= tEnd && !dynamics.landed) {
+    while (t <= tEnd) {    
         dynamics.update(dt, testForce, testTorque);
 
         StateRecord record;
@@ -63,7 +63,7 @@ int main() {
              << " [m] | Vel: " << dynamics.velocity.transpose()
              << " [m/s] | Ori: (" << dynamics.orientation(0) << ", " << dynamics.orientation(1) << ", "
              << dynamics.orientation(2) << ", " << dynamics.orientation(3) << ")"
-             << " PitYawRol: (" << record.eulerAngles_deg(0) << ", " << record.eulerAngles_deg(1) << ", "
+             << " RolPitYaw: (" << record.eulerAngles_deg(0) << ", " << record.eulerAngles_deg(1) << ", "
              << record.eulerAngles_deg(2) <<  ")"
              << " [deg] | AngVel: " << dynamics.angularVelocity.transpose()
              << endl;
@@ -93,7 +93,7 @@ int main() {
                 << rec.orientation(2) << "," << rec.orientation(3) << ","
                 << rec.angularVelocity(0) << "," << rec.angularVelocity(1) << "," 
                 << rec.angularVelocity(2) << ","
-                << rec.eulerAngles_deg(0) << "," << rec.eulerAngles_deg(1) << ","  // ADD THIS
+                << rec.eulerAngles_deg(0) << "," << rec.eulerAngles_deg(1) << ","  
                 << rec.eulerAngles_deg(2) << "\n";
     }
     outFile.close();
