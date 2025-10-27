@@ -128,7 +128,7 @@ public:
         orientation = cfg.initialOrientation;
         angularVelocity = cfg.initialAngularVelocity;
         landed = false;
-        impactVelocity = 9999999;
+        impactVelocity = 999999.9;
     }
 
     void update(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {

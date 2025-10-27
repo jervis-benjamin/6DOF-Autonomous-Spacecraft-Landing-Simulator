@@ -43,74 +43,53 @@ public:
         return Eigen::Vector3d(rotatedQuat(1), rotatedQuat(2), rotatedQuat(3));
     }
 
+    static Eigen::Vector4d rotateQuat(const Eigen::Vector4d& q, char axis, double degrees){
+        
+        Eigen::Vector4d rotationQuat;
+        Eigen::Vector4d newQuat;
+        Eigen::Vector3d unitAxis(0.0, 0.0, 0.0);
+        double angle = degrees * (M_PI/180); // convert to rad
+
+        if (axis == 'x'){
+            unitAxis(0) = 1.0;
+        }else if (axis == 'y'){
+            unitAxis(1) = 1.0;
+        }else if (axis == 'z'){
+            unitAxis(2) = 1.0;
+        }else{
+            return q; // send quat unchanged if invalid axis is given
+        }
+
+        rotationQuat(0) = cos(angle/2.0);              
+        rotationQuat(1) = unitAxis(0) * sin(angle/2.0);                  
+        rotationQuat(2) = unitAxis(1) * sin(angle/2.0);                  
+        rotationQuat(3) = unitAxis(2) * sin(angle/2.0);    
+
+        newQuat = multiply(rotationQuat, q);
+        normalize(newQuat);
+
+        return newQuat;
+    }
+
     static Eigen::Vector3d toEulerAngles(const Eigen::Vector4d& quat){
-        // using the Yaw-Pitch-Roll convention for transformation
-        // returns orientation in euler angles (in degrees)
+        // using Pitch-Yaw-Roll (YZX) convention
 
         double w = quat(0), x = quat(1), y = quat(2), z = quat(3);
         Eigen::Vector3d eulerAngles;
 
-        // for roll:
-        eulerAngles(0) = atan2( 2*(w*x + y*z), 1 - 2*(x*x + y*y));
+        // pitch
+        eulerAngles(0) = atan2(2.0*(w*y - x*z), 1.0 - 2.0*(y*y + z*z));
 
-        // for pitch:
-        double sin_pitch = 2 * (w*y - z*x);
-        if (abs(sin_pitch) >= 1)
-            eulerAngles(1) = copysign(M_PI/2, sin_pitch); 
+        // yaw
+        double sin_yaw = 2.0 * (w*z + x*y);
+        if (abs(sin_yaw) >= 1)
+            eulerAngles(1) = copysign(M_PI/2, sin_yaw); 
         else
-            eulerAngles(1) = asin(sin_pitch);
+            eulerAngles(1) = asin(sin_yaw);
         
-        // for yaw:
-        eulerAngles(2) = atan2( 2*(w*z + x*y), 1 - 2*(y*y + z*z) );
-        
+        // roll
+        eulerAngles(2) = atan2(2.0*(w*x - y*z), 1.0 - 2.0*(x*x + z*z));
 
-        return eulerAngles * (180/M_PI); // return in degrees (roll, pitch, yaw)
-    }
-
-    static Eigen::Vector4d RotationMatrixToQuat(const Eigen::Matrix3d& R) {
-        // converting rotation matrix to a quaternion
-
-        Eigen::Vector4d q;
-        double trace = R.trace();
-        
-        if (trace > 0) {
-            double s = 0.5 / sqrt(trace + 1.0);
-            q(0) = 0.25 / s;                   
-            q(1) = (R(2,1) - R(1,2)) * s;      
-            q(2) = (R(0,2) - R(2,0)) * s;      
-            q(3) = (R(1,0) - R(0,1)) * s;      
-        } else if (R(0,0) > R(1,1) && R(0,0) > R(2,2)) {
-            double s = 2.0 * sqrt(1.0 + R(0,0) - R(1,1) - R(2,2));
-            q(0) = (R(2,1) - R(1,2)) / s;      
-            q(1) = 0.25 * s;                   
-            q(2) = (R(0,1) + R(1,0)) / s;      
-            q(3) = (R(0,2) + R(2,0)) / s;      
-        } else if (R(1,1) > R(2,2)) {
-            double s = 2.0 * sqrt(1.0 + R(1,1) - R(0,0) - R(2,2));
-            q(0) = (R(0,2) - R(2,0)) / s;      
-            q(1) = (R(0,1) + R(1,0)) / s;      
-            q(2) = 0.25 * s;                   
-            q(3) = (R(1,2) + R(2,1)) / s;      
-        } else {
-            double s = 2.0 * sqrt(1.0 + R(2,2) - R(0,0) - R(1,1));
-            q(0) = (R(1,0) - R(0,1)) / s;      
-            q(1) = (R(0,2) + R(2,0)) / s;      
-            q(2) = (R(1,2) + R(2,1)) / s;      
-            q(3) = 0.25 * s;            
-        }
-        
-        return q;
-    }
-
-    static Eigen::Vector4d AxisAngleToQuat(const Eigen::Vector3d& axis, double angle) {
-        // converting axis-angle to quaternion
-        
-        Eigen::Vector4d quat;
-        quat(0) = cos(angle/2);              
-        quat(1) = axis(0) * sin(angle/2);                  
-        quat(2) = axis(1) * sin(angle/2);                  
-        quat(3) = axis(2) * sin(angle/2);                  
-        
-        return quat;
+        return eulerAngles * (180.0/M_PI); // return in degrees (pitch, yaw, roll)
     }
 };

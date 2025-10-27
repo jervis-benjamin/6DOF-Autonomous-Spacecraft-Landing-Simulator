@@ -4,3 +4,4 @@
 *.ipynb
 .vscode/
 experimental/
+docs/

@@ -102,7 +102,6 @@ axs1[1, 2].set_title('OmegaZ vs Time')
 axs1[1, 2].set_xlabel('Time (s)')
 axs1[1, 2].set_ylabel('OmegaZ (rad/s)')
 
-
 fig1.tight_layout()
 plt.show()
 
@@ -117,7 +116,3 @@ ax.set_title('Spacecraft Trajectory')
 
 ax.legend()
 plt.show() 
-
-
-
-

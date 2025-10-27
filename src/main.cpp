@@ -36,13 +36,13 @@ int main() {
     Dynamics dynamics(config, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 30.0; // s
+    const double tEnd = 100.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(50000, 0, 0);
-    Eigen::Vector3d testTorque(0, 0, 0);
+    Eigen::Vector3d testForce(50000.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 10.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
     while (t <= tEnd) {    
@@ -61,10 +61,13 @@ int main() {
         cout << "Time: " << t
              << " [s] | Pos: " << dynamics.position.transpose()
              << " [m] | Vel: " << dynamics.velocity.transpose()
+
              << " [m/s] | Ori: (" << dynamics.orientation(0) << ", " << dynamics.orientation(1) << ", "
              << dynamics.orientation(2) << ", " << dynamics.orientation(3) << ")"
-             << " RolPitYaw: (" << record.eulerAngles_deg(0) << ", " << record.eulerAngles_deg(1) << ", "
-             << record.eulerAngles_deg(2) <<  ")"
+
+             << " | RolPitYaw: (" << record.eulerAngles_deg(2) << ", " << record.eulerAngles_deg(0) << ", "
+             << record.eulerAngles_deg(1) <<  ")"
+
              << " [deg] | AngVel: " << dynamics.angularVelocity.transpose()
              << endl;
 
@@ -88,13 +91,16 @@ int main() {
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
+
                 << rec.velocity(0) << "," << rec.velocity(1) << "," << rec.velocity(2) << ","
+
                 << rec.orientation(0) << "," << rec.orientation(1) << "," 
                 << rec.orientation(2) << "," << rec.orientation(3) << ","
+
                 << rec.angularVelocity(0) << "," << rec.angularVelocity(1) << "," 
                 << rec.angularVelocity(2) << ","
-                << rec.eulerAngles_deg(0) << "," << rec.eulerAngles_deg(1) << ","  
-                << rec.eulerAngles_deg(2) << "\n";
+
+                << rec.eulerAngles_deg(2) << "," << rec.eulerAngles_deg(0) << ","  << rec.eulerAngles_deg(1) << "\n";
     }
     outFile.close();
     cout << "Total steps written: " << simData.size() << endl;
