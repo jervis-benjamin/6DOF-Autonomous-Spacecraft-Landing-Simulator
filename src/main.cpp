@@ -5,7 +5,6 @@
 /*
 
 TODOs:
-- update SimVisGraph to plot mutiple graphs on the same screen
 - integrate mass depletion and thrust mechanics
 
 */
@@ -36,13 +35,13 @@ int main() {
     Dynamics dynamics(config, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 100.0; // s
+    const double tEnd = 30.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(50000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 10.0, 0.0); // in the body frame
+    Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
     while (t <= tEnd) {    

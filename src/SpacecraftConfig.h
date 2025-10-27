@@ -28,7 +28,9 @@ struct SpacecraftConfig {
         initialPosition << 0.0, 0.0, 0.0; // for testing
         initialVelocity << 0.0, 0.0, 0.0; // for testing
         initialAngularVelocity << 0.0, 0.0, 0.0;
+
+        QuaternionTools::setOffsets(-90.0, 0.0, 0.0); // (p, y, r) defining the zero reference orientation for the body from the world frame
         initialOrientation << 1.0, 0.0, 0.0, 0.0; // initially alligned with the inertial frame
-        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', -90.0); // gives us a retrograde orientation at the start of powered descent
+        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', -180.0); // gives us a retrograde orientation at the start of powered descent
     }
 };

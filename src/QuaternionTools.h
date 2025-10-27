@@ -3,9 +3,21 @@
 #include <Eigen/Dense>
 #include <cmath>
 using namespace std;
+constexpr double PI = 3.14159265358979323846;
 
 class QuaternionTools {
 public:
+    // used to set and correct the "zero" angle reference
+    inline static double pitchOffset;
+    inline static double yawOffset;
+    inline static double rollOffset;
+
+    static void setOffsets(double pitchDeg, double yawDeg, double rollDeg) {
+        pitchOffset = pitchDeg * PI / 180.0;
+        yawOffset   = yawDeg   * PI / 180.0;
+        rollOffset  = rollDeg  * PI / 180.0;
+    }
+
     static void normalize(Eigen::Vector4d& q) {
         q /= q.norm();
     }
@@ -48,8 +60,9 @@ public:
         Eigen::Vector4d rotationQuat;
         Eigen::Vector4d newQuat;
         Eigen::Vector3d unitAxis(0.0, 0.0, 0.0);
-        double angle = degrees * (M_PI/180); // convert to rad
 
+        double angle = degrees * (PI/180); // convert to rad
+        
         if (axis == 'x'){
             unitAxis(0) = 1.0;
         }else if (axis == 'y'){
@@ -73,23 +86,27 @@ public:
 
     static Eigen::Vector3d toEulerAngles(const Eigen::Vector4d& quat){
         // using Pitch-Yaw-Roll (YZX) convention
-
+        
         double w = quat(0), x = quat(1), y = quat(2), z = quat(3);
         Eigen::Vector3d eulerAngles;
 
         // pitch
         eulerAngles(0) = atan2(2.0*(w*y - x*z), 1.0 - 2.0*(y*y + z*z));
+        eulerAngles(0) -= pitchOffset;
 
         // yaw
         double sin_yaw = 2.0 * (w*z + x*y);
-        if (abs(sin_yaw) >= 1)
-            eulerAngles(1) = copysign(M_PI/2, sin_yaw); 
-        else
+        if (abs(sin_yaw) >= 1){
+            eulerAngles(1) = copysign(PI/2, sin_yaw); 
+        }else{
             eulerAngles(1) = asin(sin_yaw);
-        
+        }
+        eulerAngles(1) -= yawOffset;
+
         // roll
         eulerAngles(2) = atan2(2.0*(w*x - y*z), 1.0 - 2.0*(x*x + z*z));
+        eulerAngles(2) -= rollOffset;
 
-        return eulerAngles * (180.0/M_PI); // return in degrees (pitch, yaw, roll)
+        return eulerAngles * (180.0/PI); // return in degrees (pitch, yaw, roll)
     }
 };
