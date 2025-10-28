@@ -7,15 +7,19 @@ constexpr double PI = 3.14159265358979323846;
 
 class QuaternionTools {
 public:
-    // used to set and correct the "zero" angle reference
-    inline static double pitchOffset;
-    inline static double yawOffset;
-    inline static double rollOffset;
+    inline static Eigen::Vector4d referenceQuat = Eigen::Vector4d(1.0, 0.0, 0.0, 0.0);
 
-    static void setOffsets(double pitchDeg, double yawDeg, double rollDeg) {
-        pitchOffset = pitchDeg * PI / 180.0;
-        yawOffset   = yawDeg   * PI / 180.0;
-        rollOffset  = rollDeg  * PI / 180.0;
+    static void setReference(const Eigen::Vector4d& refQuat) {
+        referenceQuat = refQuat;
+        normalize(referenceQuat);
+    }
+
+    static Eigen::Vector4d toRelative(const Eigen::Vector4d& worldQuat) {
+        return multiply(inverse(referenceQuat), worldQuat);
+    }
+
+    static Eigen::Vector4d toWorld(const Eigen::Vector4d& relativeQuat) {
+        return multiply(referenceQuat, relativeQuat);
     }
 
     static void normalize(Eigen::Vector4d& q) {
@@ -87,12 +91,13 @@ public:
     static Eigen::Vector3d toEulerAngles(const Eigen::Vector4d& quat){
         // using Pitch-Yaw-Roll (YZX) convention
         
-        double w = quat(0), x = quat(1), y = quat(2), z = quat(3);
+        Eigen::Vector4d relativeQuat = toRelative(quat);
+
+        double w = relativeQuat(0), x = relativeQuat(1), y = relativeQuat(2), z = relativeQuat(3);
         Eigen::Vector3d eulerAngles;
 
         // pitch
         eulerAngles(0) = atan2(2.0*(w*y - x*z), 1.0 - 2.0*(y*y + z*z));
-        eulerAngles(0) -= pitchOffset;
 
         // yaw
         double sin_yaw = 2.0 * (w*z + x*y);
@@ -101,11 +106,9 @@ public:
         }else{
             eulerAngles(1) = asin(sin_yaw);
         }
-        eulerAngles(1) -= yawOffset;
 
         // roll
         eulerAngles(2) = atan2(2.0*(w*x - y*z), 1.0 - 2.0*(x*x + z*z));
-        eulerAngles(2) -= rollOffset;
 
         return eulerAngles * (180.0/PI); // return in degrees (pitch, yaw, roll)
     }

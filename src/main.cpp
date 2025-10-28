@@ -40,7 +40,7 @@ int main() {
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testForce(50000.0, 0.0, 0.0); // in the body frame
     Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
