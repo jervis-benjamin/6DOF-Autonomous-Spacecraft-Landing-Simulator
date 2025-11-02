@@ -65,7 +65,6 @@ axs[1, 2].set_title('Yaw vs Time')
 axs[1, 2].set_xlabel('Time (s)')
 axs[1, 2].set_ylabel('Yaw (deg)')
 
-
 fig.tight_layout()
 plt.show()
 
@@ -105,8 +104,34 @@ axs1[1, 2].set_ylabel('OmegaZ (rad/s)')
 fig1.tight_layout()
 plt.show()
 
-fig2 = plt.figure()
-ax = fig2.add_subplot(111, projection='3d')
+fig2, axs2 = plt.subplots(2, 2, figsize=(12, 6))
+# Top row
+axs2[0, 0].plot(time, quatW)
+axs2[0, 0].set_title('quatW vs Time')
+axs2[0, 0].set_xlabel('Time (s)')
+axs2[0, 0].set_ylabel('quatW')
+
+axs2[0, 1].plot(time, quatX)
+axs2[0, 1].set_title('quatX vs Time')
+axs2[0, 1].set_xlabel('Time (s)')
+axs2[0, 1].set_ylabel('quatX')
+
+# Bottom row
+axs2[1, 0].plot(time, quatY)
+axs2[1, 0].set_title('quatY vs Time')
+axs2[1, 0].set_xlabel('Time (s)')
+axs2[1, 0].set_ylabel('quatY')
+
+axs2[1, 1].plot(time, quatZ)
+axs2[1, 1].set_title('quatZ vs Time')
+axs2[1, 1].set_xlabel('Time (s)')
+axs2[1, 1].set_ylabel('quatZ')
+fig2.tight_layout()
+plt.show()
+
+
+fig3d = plt.figure()
+ax = fig3d.add_subplot(111, projection='3d')
 
 ax.plot(posX, posY, posZ, label='3D trajectory')
 ax.set_xlabel('X Position (m)')

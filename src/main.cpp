@@ -35,13 +35,13 @@ int main() {
     Dynamics dynamics(config, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 30.0; // s
+    const double tEnd = 70.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(50000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 50.0, 50.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
     while (t <= tEnd) {    
@@ -51,13 +51,13 @@ int main() {
         record.time = t;
         record.position = dynamics.position;
         record.velocity = dynamics.velocity;
-        record.orientation = dynamics.orientation;
+        record.orientation = QuaternionTools::toRelative(dynamics.orientation);
         record.angularVelocity = dynamics.angularVelocity;
         record.eulerAngles_deg = QuaternionTools::toEulerAngles(dynamics.orientation);
 
         simData.push_back(record);
 
-        cout << "Time: " << t
+        /*cout << "Time: " << t
              << " [s] | Pos: " << dynamics.position.transpose()
              << " [m] | Vel: " << dynamics.velocity.transpose()
 
@@ -69,7 +69,7 @@ int main() {
 
              << " [deg] | AngVel: " << dynamics.angularVelocity.transpose()
              << endl;
-
+        */
         t += dt;
 
         if (dynamics.landed){
