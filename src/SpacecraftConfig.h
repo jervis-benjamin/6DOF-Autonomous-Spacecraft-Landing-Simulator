@@ -15,7 +15,7 @@ struct SpacecraftConfig {
     Eigen::Vector3d initialAngularVelocity; // rad/s
 
     SpacecraftConfig() { 
-        mass = 1000.0;
+        mass = 16375.0;
         inertiaTensor = Eigen::Matrix3d::Zero();
 
         inertiaTensor(0,0) = 300.0;
@@ -25,8 +25,8 @@ struct SpacecraftConfig {
         //initialPosition << 350000, -5000, 15000; // 350km away from target with a 5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << 1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)
         
-        initialPosition << 50.0, 170.0, 100.0; // for testing
-        initialVelocity << 5.0, -32.0, -21.0; // for testing
+        initialPosition << 0.0, 0.0, 0.0; // for testing
+        initialVelocity << 0.0, 0.0, 0.0; // for testing
         initialAngularVelocity << 0.0, 0.0, 0.0;
 
         Eigen::Vector4d referenceOrientation(1.0, 0.0, 0.0, 0.0);

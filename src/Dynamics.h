@@ -45,7 +45,8 @@ private:
         deriv.positionDot = vel;
 
         Eigen::Vector3d weight(0.0, 0.0, -world.getGravitationalAccel(pos.z()) * config.mass);
-        Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(quat, bodyForce);
+        Eigen::Vector4d worldQuat = QuaternionTools::toWorld(quat);
+        Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(worldQuat, bodyForce);
         Eigen::Vector3d totalForce = forceInertial + weight;
         deriv.velocityDot = totalForce / config.mass;
 
@@ -127,12 +128,16 @@ public:
         config = cfg;
         position = cfg.initialPosition;
         velocity = cfg.initialVelocity;
-        orientation = cfg.initialOrientation;
+        orientation = QuaternionTools::toRelative(cfg.initialOrientation);
         angularVelocity = cfg.initialAngularVelocity;
         landed = false;
         impactVelocity = 999999.9;
     }
     
+    Eigen::Vector4d getWorldOrientation() const {
+        return QuaternionTools::toWorld(orientation);
+    }
+
     void update(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {
         integrateRK4(dt, bodyForce, bodyTorque);
         handleCollisions();
