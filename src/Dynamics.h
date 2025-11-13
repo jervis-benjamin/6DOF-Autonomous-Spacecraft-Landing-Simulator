@@ -9,7 +9,7 @@ using namespace std;
 class Dynamics {
 
 private:
-    World world;
+    const World& world;
 
     struct StateDerivative {
         Eigen::Vector3d positionDot;
@@ -112,6 +112,8 @@ private:
         }
     }
 
+
+
 public:
     SpacecraftConfig config;
     Eigen::Vector3d position;
@@ -130,9 +132,10 @@ public:
         landed = false;
         impactVelocity = 999999.9;
     }
-
+    
     void update(double dt, const Eigen::Vector3d& bodyForce, const Eigen::Vector3d& bodyTorque) {
         integrateRK4(dt, bodyForce, bodyTorque);
         handleCollisions();
     }
+
 };

@@ -6,6 +6,9 @@
 
 TODOs:
 - integrate mass depletion and thrust mechanics
+- add a guidance class
+- integrate exit plane / bottom of rocket existance
+
 
 */
 
@@ -17,6 +20,7 @@ TODOs:
 #include "SpacecraftConfig.h"
 #include "Dynamics.h"
 #include "World.h"
+#include "Guidance.h"
 
 using namespace std;
 
@@ -30,18 +34,19 @@ struct StateRecord {
 };
 
 int main() {
-    World world = World::Earth();
+    World world = World::Moon();
     SpacecraftConfig config;
     Dynamics dynamics(config, world);
+    Guidance guidance(dynamics, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 70.0; // s
+    const double tEnd = 60.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
     Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 50.0, 50.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
     while (t <= tEnd) {    
@@ -56,8 +61,8 @@ int main() {
         record.eulerAngles_deg = QuaternionTools::toEulerAngles(dynamics.orientation);
 
         simData.push_back(record);
-
-        /*cout << "Time: " << t
+        
+        cout << "Time: " << t
              << " [s] | Pos: " << dynamics.position.transpose()
              << " [m] | Vel: " << dynamics.velocity.transpose()
 
@@ -69,7 +74,7 @@ int main() {
 
              << " [deg] | AngVel: " << dynamics.angularVelocity.transpose()
              << endl;
-        */
+        
         t += dt;
 
         if (dynamics.landed){

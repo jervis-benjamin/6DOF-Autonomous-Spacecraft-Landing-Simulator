@@ -17,20 +17,20 @@ struct SpacecraftConfig {
     SpacecraftConfig() { 
         mass = 1000.0;
         inertiaTensor = Eigen::Matrix3d::Zero();
+
         inertiaTensor(0,0) = 300.0;
         inertiaTensor(1,1) = 700.0;
         inertiaTensor(2,2) = 700.0;
-
         
         //initialPosition << 350000, -5000, 15000; // 350km away from target with a 5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << 1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)
         
-        initialPosition << 0.0, 0.0, 0.0; // for testing
-        initialVelocity << 0.0, 50.0, 350.0; // for testing
+        initialPosition << 50.0, 170.0, 100.0; // for testing
+        initialVelocity << 5.0, -32.0, -21.0; // for testing
         initialAngularVelocity << 0.0, 0.0, 0.0;
 
         Eigen::Vector4d referenceOrientation(1.0, 0.0, 0.0, 0.0);
-        referenceOrientation = QuaternionTools::rotateQuat(referenceOrientation, 'y', -90.0);
+        referenceOrientation = QuaternionTools::rotateQuat(referenceOrientation, 'y', -90.0); // orienting the body axis such that body +X is in the inertial +Z
         QuaternionTools::setReference(referenceOrientation);
 
         Eigen::Vector4d relativeOrientation;
@@ -39,4 +39,5 @@ struct SpacecraftConfig {
         initialOrientation = QuaternionTools::toWorld(relativeOrientation);
         initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 0); // setting initial orientation
     }
+
 };
