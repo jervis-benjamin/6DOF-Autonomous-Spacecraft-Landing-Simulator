@@ -27,4 +27,7 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 ### Resources Referenced
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 
   - Used for simulating Apollo landing trajectory in the sim
+ - Apollo Lunar Decent and Ascent Trajectories: https://ntrs.nasa.gov/api/citations/19700024568/downloads/19700024568.pdf
+  - Used for determining attitude and thrust behavior of Lunar Module from PDI (Powered Decent Initiation) to landing
+
 
