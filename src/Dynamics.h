@@ -1,7 +1,16 @@
+/*
+~ Dynamics.h ~
+
+Owns: 
+- State vector
+- State vector updates
+*/
+
+
 #pragma once
 
 #include <Eigen/Dense>
-#include "SpacecraftConfig.h"
+#include "Spacecraft.h"
 #include "QuaternionTools.h"
 #include "World.h"
 using namespace std;
@@ -10,6 +19,7 @@ class Dynamics {
 
 private:
     const World& world;
+    Spacecraft& spacecraft;
 
     struct StateDerivative {
         Eigen::Vector3d positionDot;
@@ -44,18 +54,20 @@ private:
 
         deriv.positionDot = vel;
 
-        Eigen::Vector3d weight(0.0, 0.0, -world.getGravitationalAccel(pos.z()) * config.mass);
+        double currentMass = spacecraft.totalMass;
+        Eigen::Vector3d weight(0.0, 0.0, -world.getGravitationalAccel(pos.z()) * currentMass);
         Eigen::Vector4d worldQuat = QuaternionTools::toWorld(quat);
         Eigen::Vector3d forceInertial = QuaternionTools::rotateVector(worldQuat, bodyForce);
         Eigen::Vector3d totalForce = forceInertial + weight;
-        deriv.velocityDot = totalForce / config.mass;
+        deriv.velocityDot = totalForce / currentMass;
 
         deriv.orientationDot = QuaternionTools::derivative(quat, angVel);
 
-        Eigen::Vector3d Iw = config.inertiaTensor * angVel;
+        Eigen::Matrix3d currentInertia = spacecraft.inertia;
+        Eigen::Vector3d Iw = currentInertia * angVel;
         Eigen::Vector3d omegaCrossIw = angVel.cross(Iw);
         Eigen::Vector3d IwDot = bodyTorque - omegaCrossIw;
-        deriv.angularVelocityDot = config.inertiaTensor.inverse() * IwDot;
+        deriv.angularVelocityDot = currentInertia.inverse() * IwDot;
 
         return deriv;
     }
@@ -116,7 +128,6 @@ private:
 
 
 public:
-    SpacecraftConfig config;
     Eigen::Vector3d position;
     Eigen::Vector3d velocity;
     Eigen::Vector4d orientation;
@@ -124,14 +135,13 @@ public:
     bool landed;
     double impactVelocity;
 
-    Dynamics(const SpacecraftConfig& cfg, const World& w) : world(w){
-        config = cfg;
-        position = cfg.initialPosition;
-        velocity = cfg.initialVelocity;
-        orientation = QuaternionTools::toRelative(cfg.initialOrientation);
-        angularVelocity = cfg.initialAngularVelocity;
+    Dynamics(Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
+        position = sc.initialPosition;
+        velocity = sc.initialVelocity;
+        orientation = QuaternionTools::toRelative(sc.initialOrientation);
+        angularVelocity = sc.initialAngularVelocity;
         landed = false;
-        impactVelocity = 999999.9;
+        impactVelocity = 999999.9; // set to NaN
     }
     
     Eigen::Vector4d getWorldOrientation() const {

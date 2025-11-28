@@ -1,3 +1,10 @@
+/*
+~ World.h ~
+
+Owns:
+- Parameters for the planet/environment
+*/
+
 #pragma once
 
 #include <Eigen/Dense>

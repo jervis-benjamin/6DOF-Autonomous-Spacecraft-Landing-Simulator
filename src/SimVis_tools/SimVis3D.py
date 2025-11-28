@@ -1,6 +1,5 @@
 # SimVis3d
 # 3D orientation and translation visualization of trajectory
-# TODO: fix the gridlines from showing up on the sky
 # *Lunar Lander model from NASA
 
 import numpy as np

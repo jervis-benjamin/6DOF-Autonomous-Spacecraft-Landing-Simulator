@@ -9,7 +9,6 @@ TODOs:
 - add a guidance class
 - integrate exit plane / bottom of rocket existance
 
-
 */
 
 #include <iostream>
@@ -17,10 +16,10 @@ TODOs:
 #include <Eigen/Dense>
 #include <fstream>
 
-#include "SpacecraftConfig.h"
+#include "Spacecraft.h"
 #include "Dynamics.h"
 #include "World.h"
-#include "Guidance.h"
+//#include "Guidance.h"
 
 using namespace std;
 
@@ -31,27 +30,35 @@ struct StateRecord {
     Eigen::Vector4d orientation;
     Eigen::Vector3d angularVelocity;
     Eigen::Vector3d eulerAngles_deg;
+    double totalMass;
+    double propellantMass;
+    double x_cg;
+    Eigen::Matrix3d inertia;
 };
 
 int main() {
     World world = World::Moon();
-    SpacecraftConfig config;
-    Dynamics dynamics(config, world);
-    Guidance guidance(dynamics, world);
+    Spacecraft spacecraft;
+    Dynamics dynamics(spacecraft, world);
+    //Guidance guidance(dynamics, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 100.0; // s
+    const double tEnd = 30.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
     Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 023.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
-    while (t <= tEnd) {    
+    while (t <= tEnd) { 
+
+        /* Main Sim Loop Functions */
         dynamics.update(dt, testForce, testTorque);
 
+
+        /* Recording Sim Data*/
         StateRecord record;
         record.time = t;
         record.position = dynamics.position;
@@ -59,9 +66,14 @@ int main() {
         record.orientation = dynamics.orientation;
         record.angularVelocity = dynamics.angularVelocity;
         record.eulerAngles_deg = QuaternionTools::toEulerAngles(QuaternionTools::toWorld(dynamics.orientation));
+        record.totalMass = spacecraft.totalMass;
+        record.propellantMass = spacecraft.propellantMass;
+        record.x_cg = spacecraft.cg(0);
+        record.inertia = spacecraft.inertia;
 
         simData.push_back(record);
 
+        /*
         cout << "Time: " << t
              << " [s] | Pos: " << dynamics.position.transpose()
              << " [m] | Vel: " << dynamics.velocity.transpose()
@@ -74,8 +86,9 @@ int main() {
 
              << " [deg] | AngVel: " << dynamics.angularVelocity.transpose()
              << endl;
-        
-        t += dt;
+        */
+
+        t += dt; // update time
 
         if (dynamics.landed){
             cout << "\n\n=== LANDING DETECTED ===" << endl;
@@ -91,7 +104,7 @@ int main() {
 
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw\n";    
+    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -104,7 +117,13 @@ int main() {
                 << rec.angularVelocity(0) << "," << rec.angularVelocity(1) << "," 
                 << rec.angularVelocity(2) << ","
 
-                << rec.eulerAngles_deg(2) << "," << rec.eulerAngles_deg(0) << ","  << rec.eulerAngles_deg(1) << "\n";
+                << rec.eulerAngles_deg(2) << "," << rec.eulerAngles_deg(0) << ","  << rec.eulerAngles_deg(1)  << "," 
+                
+                << rec.totalMass << "," << rec.propellantMass << ","
+
+                << rec.x_cg << "," << rec.inertia(0,0) << "," << rec.inertia(1,1) << "," << rec.inertia(2,2)
+                
+                << "\n";
     }
     outFile.close();
     cout << "Total steps written: " << simData.size() << endl;
