@@ -31,6 +31,16 @@ roll = simData['roll'].tolist()
 pitch = simData['pitch'].tolist()
 yaw = simData['yaw'].tolist()
 
+totalMass = simData['totalMass'].tolist()
+propMass = simData['propMass'].tolist()
+x_cg = simData['x_cg'].tolist()
+Ixx = simData['Ixx'].tolist()
+Iyy = simData['Iyy'].tolist()
+Izz = simData['Izz'].tolist()
+
+throttleLevel = simData['throttleLevel'].tolist()
+thrustEngine = simData['thrustEngine'].tolist()
+
 fig, axs = plt.subplots(2, 3, figsize=(12, 6))
 
 # Top row
@@ -129,7 +139,61 @@ axs2[1, 1].set_ylabel('quatZ')
 fig2.tight_layout()
 plt.show()
 
+fig3, axs3 = plt.subplots(2, 3, figsize=(12, 6))
 
+# ----- Top row -----
+axs3[0, 0].plot(time, totalMass)
+axs3[0, 0].set_title('Total Mass vs Time')
+axs3[0, 0].set_xlabel('Time (s)')
+axs3[0, 0].set_ylabel('Mass (kg)')
+
+axs3[0, 1].plot(time, propMass)
+axs3[0, 1].set_title('Propellant Mass vs Time')
+axs3[0, 1].set_xlabel('Time (s)')
+axs3[0, 1].set_ylabel('Prop Mass (kg)')
+
+axs3[0, 2].plot(time, x_cg)
+axs3[0, 2].set_title('x_cg vs Time')
+axs3[0, 2].set_xlabel('Time (s)')
+axs3[0, 2].set_ylabel('Center of Gravity (m)')
+
+# ----- Bottom row -----
+axs3[1, 0].plot(time, Ixx)
+axs3[1, 0].set_title('Ixx vs Time')
+axs3[1, 0].set_xlabel('Time (s)')
+axs3[1, 0].set_ylabel('Ixx (kg·m²)')
+
+axs3[1, 1].plot(time, Iyy)
+axs3[1, 1].set_title('Iyy vs Time')
+axs3[1, 1].set_xlabel('Time (s)')
+axs3[1, 1].set_ylabel('Iyy (kg·m²)')
+
+axs3[1, 2].plot(time, Izz)
+axs3[1, 2].set_title('Izz vs Time')
+axs3[1, 2].set_xlabel('Time (s)')
+axs3[1, 2].set_ylabel('Izz (kg·m²)')
+
+fig3.tight_layout()
+plt.show()
+
+fig4, axs4 = plt.subplots(1, 2, figsize=(10, 4))
+
+# Throttle Level
+axs4[0].plot(time, throttleLevel)
+axs4[0].set_title('Throttle Level vs Time')
+axs4[0].set_xlabel('Time (s)')
+axs4[0].set_ylabel('Throttle Level')
+
+# Engine Thrust
+axs4[1].plot(time, thrustEngine)
+axs4[1].set_title('Engine Thrust vs Time')
+axs4[1].set_xlabel('Time (s)')
+axs4[1].set_ylabel('Thrust (N)')
+
+fig4.tight_layout()
+plt.show()
+
+# -- 3D plots -- #
 fig3d = plt.figure()
 ax = fig3d.add_subplot(111, projection='3d')
 

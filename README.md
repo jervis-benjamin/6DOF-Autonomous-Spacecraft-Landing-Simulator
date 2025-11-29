@@ -15,8 +15,8 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 ## Current timeline
 1) **[Completed]** Create flat world with 6dof dynamics
 2) **[Completed]** Develop visualization tool for graphing trajectory
-3) [_In progress]_ Develop propulsion mechanics (mass depletion and thrust)
-4) Add guidance phases and respective trajectory mechanics
+3) **[Completed]** Develop propulsion mechanics (mass depletion, descent rate controller)
+4) [_In progress]_ Add guidance phases and respective trajectory mechanics
 5) Integrate PID controllers for TVC and RCS (full roll, pitch, and yaw control) + throttling algorithms
 6) Transition to LQR controller
 7) Implement more advanced controller logic? (ex. H-infinity, MPC)

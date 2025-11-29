@@ -19,7 +19,7 @@ class Dynamics {
 
 private:
     const World& world;
-    Spacecraft& spacecraft;
+    const Spacecraft& spacecraft;
 
     struct StateDerivative {
         Eigen::Vector3d positionDot;
@@ -136,7 +136,7 @@ private:
             Eigen::Vector3d rocketUpInertial = QuaternionTools::rotateVector(worldQuat, bodyUp);
             Eigen::Vector3d inertialUp(0.0, 0.0, 1.0);
             double cosAngle = rocketUpInertial.dot(inertialUp);
-            cosAngle = std::max(-1.0, std::min(1.0, cosAngle)); // clamping to [-1, 1] to avoid numerical errors in acos
+            cosAngle = std::clamp(cosAngle, -1.0, 1.0); // clamping to [-1, 1] to avoid numerical errors in acos
             double tiltAngle = acos(cosAngle) * (180.0 / PI);
             
             if (tiltAngle < 5.0) { // threshold for a "safe" landing (minimal chance to tip over)
@@ -163,7 +163,7 @@ public:
     // TODO: turn tippedOver to false if descent rate exceeds threshold set by the final guidance phase.
     double impactVelocity;
 
-    Dynamics(Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
+    Dynamics(const Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
         position = sc.initialPosition;
         velocity = sc.initialVelocity;
         orientation = QuaternionTools::toRelative(sc.initialOrientation);

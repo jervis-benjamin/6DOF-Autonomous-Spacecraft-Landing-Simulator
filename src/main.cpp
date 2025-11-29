@@ -18,6 +18,7 @@ TODOs:
 
 #include "Spacecraft.h"
 #include "Dynamics.h"
+#include "Propulsion.h"
 #include "World.h"
 //#include "Guidance.h"
 
@@ -34,28 +35,37 @@ struct StateRecord {
     double propellantMass;
     double x_cg;
     Eigen::Matrix3d inertia;
+    double throttleLevel;
+    double thrustEngine;
 };
 
 int main() {
     World world = World::Moon();
     Spacecraft spacecraft;
     Dynamics dynamics(spacecraft, world);
+    Propulsion propulsion(spacecraft, dynamics);
     //Guidance guidance(dynamics, world);
 
     const double dt = 0.01; // s
-    const double tEnd = 30.0; // s
+    const double tEnd = 40.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
+    //Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d bodyForce = Eigen::Vector3d::Zero();
+    double thrust;
     Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
-    //while (t <= tEnd && !dynamics.landed) {
+    //while (t <= tEnd && !dynamics.landed) { // TODO: end sim 5 seconds after landing instead immediately at landing
     while (t <= tEnd) { 
 
         /* Main Sim Loop Functions */
-        dynamics.update(dt, testForce, testTorque);
+        propulsion.maintainDescentRate = true; // for testing and tuning PID controller
+        thrust = propulsion.update(dt, 0);
+        bodyForce.x() = thrust;
+        // tvc and rcs here
+        dynamics.update(dt, bodyForce, testTorque);
 
 
         /* Recording Sim Data*/
@@ -70,6 +80,8 @@ int main() {
         record.propellantMass = spacecraft.propellantMass;
         record.x_cg = spacecraft.cg.x();
         record.inertia = spacecraft.inertia;
+        record.throttleLevel = propulsion.throttleLevel;
+        record.thrustEngine = propulsion.thrustEngine;
 
         simData.push_back(record);
 
@@ -107,7 +119,7 @@ int main() {
 
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz\n";    
+    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz,throttleLevel,thrustEngine\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -124,7 +136,9 @@ int main() {
                 
                 << rec.totalMass << "," << rec.propellantMass << ","
 
-                << rec.x_cg << "," << rec.inertia(0,0) << "," << rec.inertia(1,1) << "," << rec.inertia(2,2)
+                << rec.x_cg << "," << rec.inertia(0,0) << "," << rec.inertia(1,1) << "," << rec.inertia(2,2) << ","
+                
+                << rec.throttleLevel << "," << rec.thrustEngine
                 
                 << "\n";
     }
