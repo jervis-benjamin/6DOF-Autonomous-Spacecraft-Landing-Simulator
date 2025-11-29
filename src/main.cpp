@@ -48,8 +48,8 @@ int main() {
 
     vector<StateRecord> simData;
 
-    Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 023.0, 0.0); // in the body frame
+    Eigen::Vector3d testForce(0.0, 0.0, 0.0); // in the body frame
+    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
     //while (t <= tEnd && !dynamics.landed) {
     while (t <= tEnd) { 
@@ -68,7 +68,7 @@ int main() {
         record.eulerAngles_deg = QuaternionTools::toEulerAngles(QuaternionTools::toWorld(dynamics.orientation));
         record.totalMass = spacecraft.totalMass;
         record.propellantMass = spacecraft.propellantMass;
-        record.x_cg = spacecraft.cg(0);
+        record.x_cg = spacecraft.cg.x();
         record.inertia = spacecraft.inertia;
 
         simData.push_back(record);
@@ -94,7 +94,10 @@ int main() {
             cout << "\n\n=== LANDING DETECTED ===" << endl;
             cout << "Time at landing: " << t << " s" << endl;
             cout << "Final speed: " << dynamics.impactVelocity << " m/s" << endl;
-            }
+        }
+        if (dynamics.tippedOver){ 
+            cout << "Spacecraft has crashed into the surface!" << endl;
+        }
     }
 
     if (!dynamics.landed){

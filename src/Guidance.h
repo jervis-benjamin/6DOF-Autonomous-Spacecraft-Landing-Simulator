@@ -2,7 +2,7 @@
 ~ Guidance.h ~
 
 Owns:
-- Determining guidance programs based on current state
+- Determining guidance phases based on current state
 - Assigning throttle values and control gains
 */
 

@@ -116,15 +116,41 @@ private:
     }
 
     void handleCollisions() { 
-        if (position.z() < 0.0) {
-            position.z() = 0;
+        // TODO: accommodate for landing gear height in offset (add landing gear height in spacecraft.h)
+        
+        Eigen::Vector3d bottomDist_body(-spacecraft.cg.x(), 0.0, 0.0); // distance to the bottom of the vehicle in body frame
+
+        // rotate into the inertial frame
+        Eigen::Vector4d worldQuat = QuaternionTools::toWorld(orientation);
+        Eigen::Vector3d bottomDist_world = QuaternionTools::rotateVector(worldQuat, bottomDist_body);
+
+        double bottomAltitude = position.z() + bottomDist_world.z(); // z position in the world frame of the bottom of the vehicle
+
+        if (bottomAltitude <= 0.0) { // handle clipping through the floor
+        
+            position.z() -= bottomAltitude;
             impactVelocity = velocity.norm();
-            velocity.setZero();
-            angularVelocity.setZero();
-            landed = true;
+            
+            // using the definition of the dot product to find the tilt angle (angle between the vehicle and the vertical)
+            Eigen::Vector3d bodyUp(1.0, 0.0, 0.0); 
+            Eigen::Vector3d rocketUpInertial = QuaternionTools::rotateVector(worldQuat, bodyUp);
+            Eigen::Vector3d inertialUp(0.0, 0.0, 1.0);
+            double cosAngle = rocketUpInertial.dot(inertialUp);
+            cosAngle = std::max(-1.0, std::min(1.0, cosAngle)); // clamping to [-1, 1] to avoid numerical errors in acos
+            double tiltAngle = acos(cosAngle) * (180.0 / PI);
+            
+            if (tiltAngle < 5.0) { // threshold for a "safe" landing (minimal chance to tip over)
+                velocity.setZero();
+                angularVelocity.setZero();
+                landed = true;
+            } else { 
+                velocity.setZero();
+                angularVelocity.setZero();
+                landed = true;
+                tippedOver = true; // vehicle is prone to or has tipped over
+            }
         }
     }
-
 
 
 public:
@@ -133,6 +159,8 @@ public:
     Eigen::Vector4d orientation;
     Eigen::Vector3d angularVelocity;
     bool landed;
+    bool tippedOver; // if the landing was at too much of an angle
+    // TODO: turn tippedOver to false if descent rate exceeds threshold set by the final guidance phase.
     double impactVelocity;
 
     Dynamics(Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
@@ -141,6 +169,7 @@ public:
         orientation = QuaternionTools::toRelative(sc.initialOrientation);
         angularVelocity = sc.initialAngularVelocity;
         landed = false;
+        tippedOver = false;
         impactVelocity = 999999.9; // set to NaN
     }
     

@@ -15,14 +15,15 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 ## Current timeline
 1) **[Completed]** Create flat world with 6dof dynamics
 2) **[Completed]** Develop visualization tool for graphing trajectory
-3) [_In progress]_ Develop propulsion mechanics (mass depletion and thrust curves)
-4) Integrate PID controllers for TVC and RCS (full roll, pitch, and yaw control) + throttling algorithms
-5) Transition to LQR controller
-6) Implement more advanced controller logic? (ex. H-infinity, MPC)
-7) Integrate aerodynamics and test previous controllers
-8) Transition from flat world physics to rotating sphere
-9) Update visualization tool to accommodate for 3D graphics and rotating spherical world 
-10) Integrate controller (PID -> LQR -> MPC)
+3) [_In progress]_ Develop propulsion mechanics (mass depletion and thrust)
+4) Add guidance phases and respective trajectory mechanics
+5) Integrate PID controllers for TVC and RCS (full roll, pitch, and yaw control) + throttling algorithms
+6) Transition to LQR controller
+7) Implement more advanced controller logic? (ex. H-infinity, MPC)
+8) Integrate aerodynamics and test previous controllers
+9) Transition from flat world physics to rotating sphere
+10) Update visualization tool to accommodate for 3D graphics and rotating spherical world 
+11) Integrate controller (PID -> LQR -> MPC)
  
 ### Resources Referenced
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 

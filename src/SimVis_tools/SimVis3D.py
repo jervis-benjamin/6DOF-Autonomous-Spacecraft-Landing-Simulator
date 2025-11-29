@@ -1,6 +1,7 @@
 # SimVis3d
 # 3D orientation and translation visualization of trajectory
 # *Lunar Lander model from NASA
+# TODO: make a thrust code and control transparency level based on throttle
 
 import numpy as np
 import pandas as pd
@@ -176,7 +177,7 @@ update_text_positions()
 
 view.camera = scene.TurntableCamera(fov=60, distance=2, elevation=10, azimuth=45)
 
-POSITION_SCALE = 10
+POSITION_SCALE = 8 # tuned
 GRID_VISIBILITY_THRESHOLD = 2000.0
 GROUND_VISIBILITY_THRESHOLD = 5000.0
 STARFIELD_FADE_START = 5000.0
