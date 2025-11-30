@@ -2,15 +2,6 @@
 // By Jervis Benjamin
 // Started September 2025
 
-/*
-
-TODOs:
-- integrate mass depletion and thrust mechanics
-- add a guidance class
-- integrate exit plane / bottom of rocket existance
-
-*/
-
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
@@ -37,6 +28,7 @@ struct StateRecord {
     Eigen::Matrix3d inertia;
     double throttleLevel;
     double thrustEngine;
+    double propLevel;
 };
 
 int main() {
@@ -44,7 +36,7 @@ int main() {
     Spacecraft spacecraft;
     Dynamics dynamics(spacecraft, world);
     Propulsion propulsion(spacecraft, dynamics);
-    //Guidance guidance(dynamics, world);
+    //Guidance guidance(spacecraft, dynamics, world);
 
     const double dt = 0.01; // s
     const double tEnd = 600.0; // s
@@ -61,12 +53,11 @@ int main() {
     //while (t <= tEnd) { 
 
         /* Main Sim Loop Functions */
-
         if (dynamics.position.z() < 150.0){
-            propulsion.maintainDescentRate = true; // for testing and tuning PID controller
+            propulsion.maintainDescentRate = true; // for testing TG phases for guidance
             spacecraft.targetDescentRate = -2.0;
-        }else if (dynamics.position.z() < 2000.0){
-            propulsion.maintainDescentRate = true; // for testing and tuning PID controller
+        }else if (dynamics.position.z() < 2000.0){ // roughly start of TG-2
+            propulsion.maintainDescentRate = true; 
             spacecraft.targetDescentRate = -20.0;
         } else{
             propulsion.maintainDescentRate = false;
@@ -90,8 +81,9 @@ int main() {
         record.propellantMass = spacecraft.propellantMass;
         record.x_cg = spacecraft.cg.x();
         record.inertia = spacecraft.inertia;
-        record.throttleLevel = propulsion.throttleLevel;
+        record.throttleLevel = propulsion.throttleLevel * 100.0;
         record.thrustEngine = propulsion.thrustEngine;
+        record.propLevel = 100 * (spacecraft.propellantMass / spacecraft.initialPropellantMass);
 
         simData.push_back(record);
 
@@ -132,7 +124,7 @@ int main() {
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz,throttleLevel,thrustEngine\n";    
+    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz,throttleLevel,thrustEngine,propLevel\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -151,7 +143,7 @@ int main() {
 
                 << rec.x_cg << "," << rec.inertia(0,0) << "," << rec.inertia(1,1) << "," << rec.inertia(2,2) << ","
                 
-                << rec.throttleLevel << "," << rec.thrustEngine
+                << rec.throttleLevel << "," << rec.thrustEngine << "," << rec.propLevel
                 
                 << "\n";
     }

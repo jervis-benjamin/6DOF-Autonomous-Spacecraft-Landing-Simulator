@@ -40,6 +40,7 @@ Izz = simData['Izz'].tolist()
 
 throttleLevel = simData['throttleLevel'].tolist()
 thrustEngine = simData['thrustEngine'].tolist()
+propLevel = simData['propLevel'].tolist()
 
 fig, axs = plt.subplots(2, 3, figsize=(12, 6))
 
@@ -176,19 +177,22 @@ axs3[1, 2].set_ylabel('Izz (kg·m²)')
 fig3.tight_layout()
 #plt.show()
 
-fig4, axs4 = plt.subplots(1, 2, figsize=(10, 4))
+fig4, axs4 = plt.subplots(1, 3, figsize=(15, 4))
 
-# Throttle Level
 axs4[0].plot(time, throttleLevel)
 axs4[0].set_title('Throttle Level vs Time')
 axs4[0].set_xlabel('Time (s)')
-axs4[0].set_ylabel('Throttle Level')
+axs4[0].set_ylabel('Throttle Level (%)')
 
-# Engine Thrust
 axs4[1].plot(time, thrustEngine)
 axs4[1].set_title('Engine Thrust vs Time')
 axs4[1].set_xlabel('Time (s)')
 axs4[1].set_ylabel('Thrust (N)')
+
+axs4[2].plot(time, propLevel)
+axs4[2].set_title('Propellant Level vs Time')
+axs4[2].set_xlabel('Time (s)')
+axs4[2].set_ylabel('Propellant Level (%)')
 
 fig4.tight_layout()
 #plt.show()
