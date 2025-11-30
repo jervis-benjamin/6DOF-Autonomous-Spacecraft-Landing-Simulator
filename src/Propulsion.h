@@ -43,7 +43,7 @@ public:
         thrustEngine = maxThrust * throttleLevel;
         maintainDescentRate = false;
 
-        Kp = 3.0;
+        Kp = 4.0;
         Ki = 1.0;
         Kd = 6.0;
         previousError = 0.0;

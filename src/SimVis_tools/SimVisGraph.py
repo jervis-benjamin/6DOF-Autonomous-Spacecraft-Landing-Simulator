@@ -76,7 +76,7 @@ axs[1, 2].set_xlabel('Time (s)')
 axs[1, 2].set_ylabel('Yaw (deg)')
 
 fig.tight_layout()
-plt.show()
+#plt.show()
 
 fig1, axs1 = plt.subplots(2, 3, figsize=(12, 6))
 # Top row
@@ -112,7 +112,7 @@ axs1[1, 2].set_xlabel('Time (s)')
 axs1[1, 2].set_ylabel('OmegaZ (rad/s)')
 
 fig1.tight_layout()
-plt.show()
+#plt.show()
 
 fig2, axs2 = plt.subplots(2, 2, figsize=(12, 6))
 # Top row
@@ -137,7 +137,7 @@ axs2[1, 1].set_title('quatZ vs Time')
 axs2[1, 1].set_xlabel('Time (s)')
 axs2[1, 1].set_ylabel('quatZ')
 fig2.tight_layout()
-plt.show()
+#plt.show()
 
 fig3, axs3 = plt.subplots(2, 3, figsize=(12, 6))
 
@@ -174,7 +174,7 @@ axs3[1, 2].set_xlabel('Time (s)')
 axs3[1, 2].set_ylabel('Izz (kg·m²)')
 
 fig3.tight_layout()
-plt.show()
+#plt.show()
 
 fig4, axs4 = plt.subplots(1, 2, figsize=(10, 4))
 
@@ -191,7 +191,7 @@ axs4[1].set_xlabel('Time (s)')
 axs4[1].set_ylabel('Thrust (N)')
 
 fig4.tight_layout()
-plt.show()
+#plt.show()
 
 # -- 3D plots -- #
 fig3d = plt.figure()
