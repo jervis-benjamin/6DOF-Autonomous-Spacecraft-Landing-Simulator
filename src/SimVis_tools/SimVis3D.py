@@ -59,7 +59,10 @@ def hex_to_rgb(hex_color):
 df = pd.read_csv("simulation_data.csv")
 pos = df[["posX", "posY", "posZ"]].values
 vel = df[["velX", "velY", "velZ"]].values
+
 quat = df[["quatW", "quatX", "quatY", "quatZ"]].values
+euler_ang = df[["pitch", "yaw", "roll"]].values
+
 throttle = df["throttleLevel"].values / 100
 prop = df["propLevel"].values
 
@@ -84,7 +87,7 @@ axes_calibrate_rot = (
 )
 axes_calibrate_rot_3x3 = axes_calibrate_rot[:3, :3]
 
-canvas = scene.SceneCanvas(keys='interactive', bgcolor='black', size=(900, 700), show=True)
+canvas = scene.SceneCanvas(keys='interactive', bgcolor='black', size=(1200, 700), show=True)
 view = canvas.central_widget.add_view()
 
 axis_length = 0.65
@@ -198,17 +201,29 @@ alt_text.anchors = ('left', 'top')
 time_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=12, face='Tahoma')
 time_text.anchors = ('left', 'top')
 
-pos_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+throttle_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=9, face='Tahoma')
+throttle_text.anchors = ('left', 'top')
+
+prop_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=9, face='Tahoma')
+prop_text.anchors = ('left', 'top')
+
+
+pos_text = Text('', parent=canvas.scene, color='yellow', bold=True, font_size=7, face='Tahoma')
 pos_text.anchors = ('right', 'top')
 
 vel_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
 vel_text.anchors = ('right', 'top')
 
-throttle_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
-throttle_text.anchors = ('right', 'top')
+quat_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+quat_text.anchors = ('right', 'top')
 
-prop_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
-prop_text.anchors = ('right', 'top')
+pitch_text = Text('', parent=canvas.scene, color=hex_to_rgb("#48fe57"), bold=True, font_size=7, face='Tahoma')
+pitch_text.anchors = ('right', 'top')
+yaw_text = Text('', parent=canvas.scene, color=hex_to_rgb("#37c3fa"), bold=True, font_size=7, face='Tahoma')
+yaw_text.anchors = ('right', 'top')
+roll_text = Text('', parent=canvas.scene, color=hex_to_rgb("#ff5160"), bold=True, font_size=7, face='Tahoma')
+roll_text.anchors = ('right', 'top')
+
 
 x_axis_text = Text('body x', parent=canvas.scene, color='red', bold=True, font_size=10, face='Tahoma')
 y_axis_text = Text('body y', parent=canvas.scene, color='green', bold=True, font_size=10, face='Tahoma')
@@ -219,10 +234,15 @@ def update_text_positions():
     
     alt_text.pos = 10, 50
     time_text.pos = 10, 90
+    prop_text.pos = 10, 125
+    throttle_text.pos = 10, 160
+
     pos_text.pos = w - 20, 35
     vel_text.pos = w - 20, 60
-    prop_text.pos = w - 20, 85
-    throttle_text.pos = w - 20, 110
+    quat_text.pos = w - 20, 85
+    pitch_text.pos = w - 20, 110
+    yaw_text.pos = w - 20, 135
+    roll_text.pos = w - 20, 160
     
     x_axis_text.pos = w - 60, h - 100
     y_axis_text.pos = w - 60, h - 60
@@ -243,7 +263,7 @@ update_text_positions()
 
 view.camera = scene.TurntableCamera(fov=60, distance=2, elevation=10, azimuth=45)
 
-POSITION_SCALE = 8 # tuned
+POSITION_SCALE = 9 # tuned
 GRID_VISIBILITY_THRESHOLD = 2000.0
 GROUND_VISIBILITY_THRESHOLD = 5000.0
 STARFIELD_FADE_START = 5000.0
@@ -288,6 +308,7 @@ def update(ev):
     current_frame[0] = (current_frame[0] + int(playback_speed[0])) % len(times)
     
     q = quat[i]
+    eul = euler_ang[i]
     p = pos[i]
     v = vel[i]
     thr = throttle[i]
@@ -368,8 +389,13 @@ def update(ev):
     time_text.text = f"Time: {times[i]:.2f} s"
     pos_text.text = f"pos(x y z): [{p[0]:.2f}, {p[1]:.2f}, {p[2]:.2f}] m"
     vel_text.text = f"vel(x y z): [{v[0]:.2f}, {v[1]:.2f}, {v[2]:.2f}] m/s"
-    prop_text.text = f"fuel remaining: {prp:.2f} %"
-    throttle_text.text = f"thrust: {(thr*100):.2f} %"
+    prop_text.text = f"Fuel tank: {prp:.2f} %"
+    throttle_text.text = f"Thrust: {(thr*100):.2f} %"
+    quat_text.text = f"quat(w x y z): [{q[0]:.2f}, {q[1]:.2f}, {q[2]:.2f}, {q[3]:.2f}]"
+    pitch_text.text = f"pitch: {eul[0]:.2f}°"   
+    yaw_text.text = f"yaw: {eul[1]:.2f}°"       
+    roll_text.text = f"roll: {eul[2]:.2f}°"
+
 
     canvas.update()
 

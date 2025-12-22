@@ -116,7 +116,7 @@ private:
     }
 
     void handleCollisions() { 
-        // TODO: accommodate for landing gear height in offset (add landing gear height in spacecraft.h)
+        
         
         Eigen::Vector3d bottomDist_body(-spacecraft.cg.x(), 0.0, 0.0); // distance to the bottom of the vehicle in body frame
 
@@ -126,10 +126,13 @@ private:
 
         double bottomAltitude = position.z() + bottomDist_world.z(); // z position in the world frame of the bottom of the vehicle
 
-        if (bottomAltitude <= 0.0) { // handle clipping through the floor
+        if ((bottomAltitude <= 0.0)){ // handle clipping through the floor
         
             position.z() -= bottomAltitude;
-            impactVelocity = velocity.norm();
+
+            if (landingTimer == 0){
+                impactVelocity = velocity.norm(); // find impact velocity the moment the spacecraft makes contact with the ground
+            }
             
             // using the definition of the dot product to find the tilt angle (angle between the vehicle and the vertical)
             Eigen::Vector3d bodyUp(1.0, 0.0, 0.0); 
@@ -139,7 +142,7 @@ private:
             cosAngle = std::clamp(cosAngle, -1.0, 1.0); // clamping to [-1, 1] to avoid numerical errors in acos
             double tiltAngle = acos(cosAngle) * (180.0 / PI);
             
-            if (tiltAngle < 5.0) { // threshold for a "safe" landing (minimal chance to tip over)
+            if (tiltAngle <= 5.0) { // threshold for a "safe" landing (minimal chance to tip over)
                 velocity.setZero();
                 angularVelocity.setZero();
                 landed = true;
@@ -163,6 +166,10 @@ public:
     // TODO: turn tippedOver to false if descent rate exceeds threshold set by the final guidance phase.
     double impactVelocity;
 
+    // in Dynamics.h for usage in impact velocity
+    double landingTimer;
+    double endTimePost; //(controls when to end the sim after landing)
+
     Dynamics(const Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
         position = sc.initialPosition;
         velocity = sc.initialVelocity;
@@ -171,6 +178,9 @@ public:
         landed = false;
         tippedOver = false;
         impactVelocity = 999999.9; // set to NaN
+        landingTimer = 0.0; // s
+        endTimePost = 5.0; // s 
+
     }
     
     Eigen::Vector4d getWorldOrientation() const {

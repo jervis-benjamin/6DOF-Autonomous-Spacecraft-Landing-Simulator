@@ -76,6 +76,10 @@ axs[1, 2].set_title('Yaw vs Time')
 axs[1, 2].set_xlabel('Time (s)')
 axs[1, 2].set_ylabel('Yaw (deg)')
 
+for row in axs:
+    for ax in row:
+        ax.grid(True)
+
 fig.tight_layout()
 #plt.show()
 
@@ -112,6 +116,10 @@ axs1[1, 2].set_title('OmegaZ vs Time')
 axs1[1, 2].set_xlabel('Time (s)')
 axs1[1, 2].set_ylabel('OmegaZ (rad/s)')
 
+for row in axs1:
+    for ax in row:
+        ax.grid(True)
+
 fig1.tight_layout()
 #plt.show()
 
@@ -137,6 +145,11 @@ axs2[1, 1].plot(time, quatZ)
 axs2[1, 1].set_title('quatZ vs Time')
 axs2[1, 1].set_xlabel('Time (s)')
 axs2[1, 1].set_ylabel('quatZ')
+
+for row in axs2:
+    for ax in row:
+        ax.grid(True)
+
 fig2.tight_layout()
 #plt.show()
 
@@ -174,6 +187,10 @@ axs3[1, 2].set_title('Izz vs Time')
 axs3[1, 2].set_xlabel('Time (s)')
 axs3[1, 2].set_ylabel('Izz (kg·m²)')
 
+for row in axs3:
+    for ax in row:
+        ax.grid(True)
+
 fig3.tight_layout()
 #plt.show()
 
@@ -194,6 +211,9 @@ axs4[2].set_title('Propellant Level vs Time')
 axs4[2].set_xlabel('Time (s)')
 axs4[2].set_ylabel('Propellant Level (%)')
 
+for ax in axs4:
+    ax.grid(True)
+
 fig4.tight_layout()
 #plt.show()
 
@@ -208,4 +228,6 @@ ax.set_zlabel('Z Position (m)')
 ax.set_title('Spacecraft Trajectory')
 
 ax.legend()
+
+
 plt.show() 

@@ -37,7 +37,7 @@ public:
     }
     
     static World Moon() {
-        return World("Moon", 1.737e6, 7.347e22);
+        return World("the Moon", 1.737e6, 7.347e22);
     }
     
     static World Mars() {

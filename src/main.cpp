@@ -21,7 +21,7 @@ struct StateRecord {
     Eigen::Vector3d velocity;
     Eigen::Vector4d orientation;
     Eigen::Vector3d angularVelocity;
-    Eigen::Vector3d eulerAngles_deg;
+    Eigen::Vector3d eulerAngles_deg; // following pitch-yaw-roll
     double totalMass;
     double propellantMass;
     double x_cg;
@@ -49,19 +49,21 @@ int main() {
     double thrust;
     Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
-    while (t <= tEnd && !dynamics.landed) { // TODO: end sim 5 seconds after landing instead immediately at landing
+    while ( !(t > tEnd || (dynamics.landed && (dynamics.landingTimer >= dynamics.endTimePost))) ){ // TODO: end sim 5 seconds after landing instead immediately at landing
     //while (t <= tEnd) { 
 
         /* Main Sim Loop Functions */
+        
         if (dynamics.position.z() < 150.0){
             propulsion.maintainDescentRate = true; // for testing TG phases for guidance
-            spacecraft.targetDescentRate = -2.0;
+            spacecraft.targetDescentRate = -1.5;
         }else if (dynamics.position.z() < 2000.0){ // roughly start of TG-2
             propulsion.maintainDescentRate = true; 
             spacecraft.targetDescentRate = -20.0;
         } else{
             propulsion.maintainDescentRate = false;
         }
+        
 
         thrust = propulsion.update(dt, 0);
         bodyForce.x() = thrust;
@@ -104,10 +106,13 @@ int main() {
 
         t += dt; // update time
 
-        if (dynamics.landed){
-            cout << "\n\n=== LANDING DETECTED ===" << endl;
-            cout << "Time at landing: " << t << " s" << endl;
-            cout << "Final speed: " << dynamics.impactVelocity << " m/s" << endl;
+        if (dynamics.landed && !(dynamics.landingTimer >= dynamics.endTimePost)){
+            dynamics.landingTimer += dt;
+        }
+        if(dynamics.landed && (dynamics.landingTimer >= dynamics.endTimePost)){
+            cout << "\n\n=== CONTACT DETECTED ===" << endl;
+            cout << "Time at contact: " << t - dynamics.landingTimer << " s" << endl;
+            cout << "Final velocity: " << dynamics.impactVelocity << " m/s" << endl;
             cout << "Remaining propellant mass: " << spacecraft.propellantMass << " kg" << endl; 
         }
         
@@ -119,8 +124,10 @@ int main() {
             cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
             cout << "Remaining propellant mass: " << spacecraft.propellantMass << " kg" << endl;
         }
-    if (dynamics.tippedOver || (dynamics.landed && (std::abs(dynamics.impactVelocity) > std::abs(spacecraft.targetDescentRate)))){ 
+    if (dynamics.tippedOver || (dynamics.landed && (abs(dynamics.impactVelocity) > abs(spacecraft.targetDescentRate)))){ 
             cout << "Spacecraft has crashed into the surface!" << endl;
+        }else if (!dynamics.tippedOver && (dynamics.landed && (abs(dynamics.impactVelocity) < abs(spacecraft.targetDescentRate)))){
+            cout << "Touchdown confirmed, safe on " << world.name << "!" << endl;
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");

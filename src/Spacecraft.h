@@ -44,7 +44,7 @@ public:
 
     
     Spacecraft() {
-        propellantMass = 8200 / 3; // kg (roughly the descent stage prop mass of the lunar module)
+        propellantMass = 8200 / 4; // kg (roughly the descent stage prop mass of the lunar module)
         initialPropellantMass = 8200;
         //initialPropellantMass = propellantMass; 
         totalMass = dryMass + propellantMass;
@@ -55,12 +55,12 @@ public:
         inertia = Eigen::Matrix3d::Zero();
         updateInertia();
         
-        // realistic apollo/round-moon numbers
+        // realistic apollo numbers
         //initialPosition << 350000, -2000, 15000; // 350km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << -1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)
         
         // starting values adjusted for flat moon
-        //initialPosition << 200000, -2000, 15000; // 350km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
+        //initialPosition << 200000, -2000, 15000; // 200km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << -1700, -5, 0;
 
         initialPosition << 0.0, 0.0, 3000.0; // for testing
@@ -81,7 +81,7 @@ public:
     /*
     Center of gravity and moment of inertia equations were derived by simplfying the vehicle as two cylinders.
     One with the dimensions of the vehicle and with the mass of dryMass, and the other with the dimensions 
-    of the propellant column in the tank with the mass of propellantMass. The propellant column / tank is 
+    of the propellant column in the tank with the mass of propellantMass. The propellant column/tank is 
     positioned such that it is in the center of the vehicle with the same height of the descent stage.
     */
     void updateCG(){
