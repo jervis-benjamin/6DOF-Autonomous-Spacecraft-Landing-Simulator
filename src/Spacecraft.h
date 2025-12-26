@@ -74,8 +74,8 @@ public:
 
         Eigen::Vector4d relativeOrientation(1.0, 0.0, 0.0, 0.0);
         initialOrientation = QuaternionTools::toWorld(relativeOrientation);
-        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 0.0); // setting initial orientation
-
+        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 1.1); // setting initial orientation
+        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'x', 15.1);
     }
 
     /*

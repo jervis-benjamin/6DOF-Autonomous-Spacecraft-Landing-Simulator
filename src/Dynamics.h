@@ -117,7 +117,6 @@ private:
 
     void handleCollisions() { 
         
-        
         Eigen::Vector3d bottomDist_body(-spacecraft.cg.x(), 0.0, 0.0); // distance to the bottom of the vehicle in body frame
 
         // rotate into the inertial frame
@@ -140,17 +139,46 @@ private:
             Eigen::Vector3d inertialUp(0.0, 0.0, 1.0);
             double cosAngle = rocketUpInertial.dot(inertialUp);
             cosAngle = std::clamp(cosAngle, -1.0, 1.0); // clamping to [-1, 1] to avoid numerical errors in acos
-            double tiltAngle = acos(cosAngle) * (180.0 / PI);
+            double tiltAngle = acos(cosAngle) * (180.0 / PI); // in degrees
             
-            if (tiltAngle <= 5.0) { // threshold for a "safe" landing (minimal chance to tip over)
+            if (tiltAngle <= 10.0) { // arbitrary 10 deg threshold for a "safe" landing (minimal chance to tip over)     
                 velocity.setZero();
                 angularVelocity.setZero();
                 landed = true;
-            } else { 
+
+                // if vehicle is within landing constraints, reorient the vehicle to be upright 
+                //Eigen::Vector4d uprightOrientationWorld(1.0, 0.0, 0.0, 0.0);
+                orientation << 1.0, 0.0, 0.0, 0.0; 
+
+            } else {
                 velocity.setZero();
                 angularVelocity.setZero();
                 landed = true;
                 tippedOver = true; // vehicle is prone to or has tipped over
+                
+                // if vehicle is outside landing constraints, tip over vehicle about an axis perpendicular to where the vehicle is pointed to on the ground
+                // (kinda fake but makes animation nice + we are not aiming for accurate post landing dynamics)
+                Eigen::Vector3d fallDirection(rocketUpInertial.x(), rocketUpInertial.y(), 0.0); // we want a vector that purely points to the direction of fall
+                fallDirection.normalize(); // normalize to get unit vector
+                    
+                Eigen::Vector3d tippedBodyX = fallDirection; // top of the vehicle is oriented in the direction that the vehicle will tip over
+                
+                Eigen::Vector3d tippedBodyY = inertialUp.cross(tippedBodyX); // the vehicle has a perpendicular axis to the direction of fall, which we can represent as being in the body y axis
+                tippedBodyY.normalize();
+                
+                Eigen::Vector3d tippedBodyZ = tippedBodyX.cross(tippedBodyY); // solving for the new z axis location to complete the "tipped" orientation of the vehicle
+                tippedBodyZ.normalize();
+                
+                Eigen::Matrix3d rotMat; // forming a rotation matrix to represent the locations of the new box axis post tip-over
+                rotMat.col(0) = tippedBodyX;  
+                rotMat.col(1) = tippedBodyY;  
+                rotMat.col(2) = tippedBodyZ;  
+                
+                Eigen::Quaterniond quat(rotMat); // converting this tipped over rotation into quaternion format for the state orientation via Eigen's functions
+                Eigen::Vector4d tiledOrientationWorld(quat.w(), quat.x(), quat.y(), quat.z()); // converting Eigen's quaternion variable into the format I have been using this whole time (initially wanted to learn more about quaternions so I decided to not use prebuilt quat functions first)
+                
+                orientation = QuaternionTools::toRelative(tiledOrientationWorld); // making sure orientation is still relative to the upright orientation of the vehicle
+                QuaternionTools::normalize(orientation);
             }
         }
     }
@@ -174,6 +202,7 @@ public:
         position = sc.initialPosition;
         velocity = sc.initialVelocity;
         orientation = QuaternionTools::toRelative(sc.initialOrientation);
+        QuaternionTools::normalize(orientation);
         angularVelocity = sc.initialAngularVelocity;
         landed = false;
         tippedOver = false;

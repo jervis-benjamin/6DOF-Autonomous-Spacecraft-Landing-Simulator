@@ -53,12 +53,11 @@ int main() {
     //while (t <= tEnd) { 
 
         /* Main Sim Loop Functions */
-        
         if (dynamics.position.z() < 150.0){
-            propulsion.maintainDescentRate = true; // for testing TG phases for guidance
+            propulsion.maintainDescentRate = false; // for testing TG phases for guidance
             spacecraft.targetDescentRate = -1.5;
         }else if (dynamics.position.z() < 2000.0){ // roughly start of TG-2
-            propulsion.maintainDescentRate = true; 
+            propulsion.maintainDescentRate = false; 
             spacecraft.targetDescentRate = -20.0;
         } else{
             propulsion.maintainDescentRate = false;

@@ -391,7 +391,7 @@ def update(ev):
     vel_text.text = f"vel(x y z): [{v[0]:.2f}, {v[1]:.2f}, {v[2]:.2f}] m/s"
     prop_text.text = f"Fuel tank: {prp:.2f} %"
     throttle_text.text = f"Thrust: {(thr*100):.2f} %"
-    quat_text.text = f"quat(w x y z): [{q[0]:.2f}, {q[1]:.2f}, {q[2]:.2f}, {q[3]:.2f}]"
+    quat_text.text = f"quat(w x y z): [{q[0]:.3f}, {q[1]:.3f}, {q[2]:.3f}, {q[3]:.3f}]"
     pitch_text.text = f"pitch: {eul[0]:.2f}°"   
     yaw_text.text = f"yaw: {eul[1]:.2f}°"       
     roll_text.text = f"roll: {eul[2]:.2f}°"
