@@ -2,9 +2,9 @@
 ~ Guidance.h ~
 
 Owns:
-- Determining guidance phases based on current state
-- Assigning throttle values and control gains
+- Scheduling velocity setpoints during various phases of descent
 */
+
 
 #pragma once
 

@@ -7,7 +7,7 @@ constexpr double PI = 3.14159265358979323846;
 
 class QuaternionTools {
 public:
-    inline static Eigen::Vector4d referenceQuat = Eigen::Vector4d(1.0, 0.0, 0.0, 0.0);
+    inline static Eigen::Vector4d referenceQuat{1.0, 0.0, 0.0, 0.0};
 
     static void setReference(const Eigen::Vector4d& refQuat) {
         referenceQuat = refQuat;
@@ -59,7 +59,7 @@ public:
         return Eigen::Vector3d(rotatedQuat(1), rotatedQuat(2), rotatedQuat(3));
     }
 
-    static Eigen::Vector4d rotateQuat(const Eigen::Vector4d& q, char axis, double degrees){
+    static Eigen::Vector4d rotateQuat(const Eigen::Vector4d& q, const char axis, const double degrees){
         
         Eigen::Vector4d rotationQuat;
         Eigen::Vector4d newQuat;

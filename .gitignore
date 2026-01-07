@@ -2,6 +2,7 @@
 *.json
 *.exe
 *.ipynb
+scratchpad.txt
 .vscode/
 experimental/
 docs/

@@ -1,5 +1,5 @@
 # Overview 
-Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criterion and testing controller performance for thrust vector control (TVC), reaction control system (RCS), and propulsion.
+Simulating the autonomous landing of a spacecraft to meet trajectory and landing criterion, testing controller performance for systems such as thrust vector control (TVC) and reaction control system (RCS), and evaulating guidance algorithms to control various aspects of flight.
 
 ## Project Breakdown
 - Physics:
@@ -25,11 +25,10 @@ Simulating the autonomous 6dof landing of a spacecraft to meet trajectory criter
 10) Update visualization tool to accommodate for 3D graphics and rotating spherical world 
 11) Integrate controller (PID -> LQR -> MPC)
  
-### Resources Referenced
+### Resources Referenced  
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 
   - Used for simulating Apollo landing trajectory in the sim
- - Apollo Lunar Decent and Ascent Trajectories: https://ntrs.nasa.gov/api/citations/19700024568/downloads/19700024568.pdf
+ - Apollo Lunar Decent and Ascent Trajectories: https://www.lpi.usra.edu/lunar/documents/Bennett_NASA-TM-X-58040.pdf
    - Used for determining attitude and thrust behavior of Lunar Module from PDI (Powered Decent Initiation) to landing
-
-
-
+- Apollo Design Development Documentation: https://ntrs.nasa.gov/api/citations/19780015068/downloads/19780015068.pdf
+  - Used for obtaining certain parameters of the Lunar Module

@@ -34,12 +34,13 @@ public:
     Eigen::Matrix3d inertia; // kg*m^2 (about the center of mass)
 
     // other specs
-    double targetDescentRate = 0; // m/s target descent rate for this spacecraft (put in guidance once it has been implemented)
+    double touchdownVelocityLimit = 1.5; // m/s (magnitude of the max touchdown velocity tolerance of the lander)
+
 
     // initial conditions
     Eigen::Vector3d initialPosition; // m
     Eigen::Vector3d initialVelocity; // m/s
-    Eigen::Vector4d initialOrientation; // w, x, y, z
+    Eigen::Vector4d initialOrientation; // w, x, y, z (quaternion)
     Eigen::Vector3d initialAngularVelocity; // rad/s
 
     
@@ -72,10 +73,9 @@ public:
         referenceOrientation = QuaternionTools::rotateQuat(referenceOrientation, 'y', -90.0); // orienting the body axis such that body +X is with the inertial +Z
         QuaternionTools::setReference(referenceOrientation);
 
-        Eigen::Vector4d relativeOrientation(1.0, 0.0, 0.0, 0.0);
+        Eigen::Vector4d relativeOrientation(1.0, 0.0, 0.0, 0.0); // Start upright in the "relative" frame
         initialOrientation = QuaternionTools::toWorld(relativeOrientation);
-        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 1.1); // setting initial orientation
-        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'x', 15.1);
+        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 5.0); // setting initial orientation
     }
 
     /*

@@ -6,7 +6,6 @@ Owns:
 - State vector updates
 */
 
-
 #pragma once
 
 #include <Eigen/Dense>
@@ -136,6 +135,7 @@ private:
             // using the definition of the dot product to find the tilt angle (angle between the vehicle and the vertical)
             Eigen::Vector3d bodyUp(1.0, 0.0, 0.0); 
             Eigen::Vector3d rocketUpInertial = QuaternionTools::rotateVector(worldQuat, bodyUp);
+            
             Eigen::Vector3d inertialUp(0.0, 0.0, 1.0);
             double cosAngle = rocketUpInertial.dot(inertialUp);
             cosAngle = std::clamp(cosAngle, -1.0, 1.0); // clamping to [-1, 1] to avoid numerical errors in acos
@@ -145,40 +145,19 @@ private:
                 velocity.setZero();
                 angularVelocity.setZero();
                 landed = true;
-
-                // if vehicle is within landing constraints, reorient the vehicle to be upright 
-                //Eigen::Vector4d uprightOrientationWorld(1.0, 0.0, 0.0, 0.0);
-                orientation << 1.0, 0.0, 0.0, 0.0; 
-
+                
+                // if we are within landing constrains, level spacecraft and preserve roll
+                Eigen::Vector3d eulerAngles = QuaternionTools::toEulerAngles(QuaternionTools::toWorld(orientation));
+                double roll_deg = eulerAngles(2);
+                Eigen::Vector4d uprightOrientation(1.0, 0.0, 0.0, 0.0);
+                orientation = QuaternionTools::rotateQuat(uprightOrientation, 'x', roll_deg);
             } else {
                 velocity.setZero();
                 angularVelocity.setZero();
                 landed = true;
                 tippedOver = true; // vehicle is prone to or has tipped over
-                
-                // if vehicle is outside landing constraints, tip over vehicle about an axis perpendicular to where the vehicle is pointed to on the ground
-                // (kinda fake but makes animation nice + we are not aiming for accurate post landing dynamics)
-                Eigen::Vector3d fallDirection(rocketUpInertial.x(), rocketUpInertial.y(), 0.0); // we want a vector that purely points to the direction of fall
-                fallDirection.normalize(); // normalize to get unit vector
-                    
-                Eigen::Vector3d tippedBodyX = fallDirection; // top of the vehicle is oriented in the direction that the vehicle will tip over
-                
-                Eigen::Vector3d tippedBodyY = inertialUp.cross(tippedBodyX); // the vehicle has a perpendicular axis to the direction of fall, which we can represent as being in the body y axis
-                tippedBodyY.normalize();
-                
-                Eigen::Vector3d tippedBodyZ = tippedBodyX.cross(tippedBodyY); // solving for the new z axis location to complete the "tipped" orientation of the vehicle
-                tippedBodyZ.normalize();
-                
-                Eigen::Matrix3d rotMat; // forming a rotation matrix to represent the locations of the new box axis post tip-over
-                rotMat.col(0) = tippedBodyX;  
-                rotMat.col(1) = tippedBodyY;  
-                rotMat.col(2) = tippedBodyZ;  
-                
-                Eigen::Quaterniond quat(rotMat); // converting this tipped over rotation into quaternion format for the state orientation via Eigen's functions
-                Eigen::Vector4d tiledOrientationWorld(quat.w(), quat.x(), quat.y(), quat.z()); // converting Eigen's quaternion variable into the format I have been using this whole time (initially wanted to learn more about quaternions so I decided to not use prebuilt quat functions first)
-                
-                orientation = QuaternionTools::toRelative(tiledOrientationWorld); // making sure orientation is still relative to the upright orientation of the vehicle
-                QuaternionTools::normalize(orientation);
+                // Deleted tip over mechanics since it contained various bugs and is not critical for project. A simple statement
+                // using the tippedOver variable at the sim summary printout would suffice to show what the failure mode was.
             }
         }
     }
@@ -187,16 +166,16 @@ private:
 public:
     Eigen::Vector3d position;
     Eigen::Vector3d velocity;
-    Eigen::Vector4d orientation;
+    Eigen::Vector4d orientation; // stored as a relative quaternion to the body-world quaternion of an upright spacecraft
     Eigen::Vector3d angularVelocity;
-    bool landed;
-    bool tippedOver; // if the landing was at too much of an angle
+    bool landed = false;
+    bool tippedOver = false; // if the landing was at too much of an angle
     // TODO: turn tippedOver to false if descent rate exceeds threshold set by the final guidance phase.
-    double impactVelocity;
+    double impactVelocity = 99999999.9; // set to NaN
 
     // in Dynamics.h for usage in impact velocity
-    double landingTimer;
-    double endTimePost; //(controls when to end the sim after landing)
+    double landingTimer = 0.0; // s
+    double endTimePost = 5.0; // s (controls when to end the sim after landing)
 
     Dynamics(const Spacecraft& sc, const World& w) : spacecraft(sc), world(w){
         position = sc.initialPosition;
@@ -204,12 +183,6 @@ public:
         orientation = QuaternionTools::toRelative(sc.initialOrientation);
         QuaternionTools::normalize(orientation);
         angularVelocity = sc.initialAngularVelocity;
-        landed = false;
-        tippedOver = false;
-        impactVelocity = 999999.9; // set to NaN
-        landingTimer = 0.0; // s
-        endTimePost = 5.0; // s 
-
     }
     
     Eigen::Vector4d getWorldOrientation() const {

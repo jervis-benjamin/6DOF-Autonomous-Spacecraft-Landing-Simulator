@@ -25,10 +25,10 @@ public:
         mass = m;
     }
 
-    // returns the magnetude of gravitational acceleration for a given altitude
+    // returns the magnitude  of gravitational acceleration for a given altitude
     double getGravitationalAccel(const double altitude) const{
         double r = radius + altitude;
-        return (G * mass)/(r*r); // m/s^2
+        return (G * mass)/(r*r); // m/s^2 (note that this is the MAGNITUDE)
     }
 
     // predefined worlds
