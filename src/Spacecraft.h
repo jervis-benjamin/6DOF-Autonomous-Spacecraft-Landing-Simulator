@@ -64,7 +64,7 @@ public:
         //initialPosition << 200000, -2000, 15000; // 200km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << -1700, -5, 0;
 
-        initialPosition << 0.0, 0.0, 3000.0; // for testing
+        initialPosition << 0.0, 0.0, 5000.0; // for testing
         initialVelocity << 0.0, 0.0, 0.0; // for testing
 
         initialAngularVelocity << 0.0, 0.0, 0.0; 

@@ -41,6 +41,8 @@ struct StateRecord {
     double throttleLevel;
     double thrustEngine;
     double propLevel;
+    array<int, 3> RCS_thrusterSet;
+    Eigen::Vector3d RCStorques;
 };
 
 int main() {
@@ -133,6 +135,8 @@ int main() {
         record.throttleLevel = propulsion.throttleLevel * 100.0;
         record.thrustEngine = propulsion.thrustEngine;
         record.propLevel = (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100;
+        record.RCS_thrusterSet = rcs.RCS_thrusterSet;
+        record.RCStorques = rcs.RCStorques;
 
         simData.push_back(record);
 
@@ -185,7 +189,7 @@ int main() {
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time (s), posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%)\n";    
+    outFile << "time (s), posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS torque (roll),RCS torque (pitch),RCS torque (yaw)\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -204,7 +208,11 @@ int main() {
 
                 << rec.x_cg << "," << rec.inertia(0,0) << "," << rec.inertia(1,1) << "," << rec.inertia(2,2) << ","
                 
-                << rec.throttleLevel << "," << rec.thrustEngine << "," << rec.propLevel
+                << rec.throttleLevel << "," << rec.thrustEngine << "," << rec.propLevel << ","
+
+                << rec.RCS_thrusterSet[0] << "," << rec.RCS_thrusterSet[1] << "," << rec.RCS_thrusterSet[2] << ","
+                
+                << rec.RCStorques(0) << "," << rec.RCStorques(1) << "," << rec.RCStorques(2)
                 
                 << "\n";
     }

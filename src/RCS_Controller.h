@@ -181,13 +181,13 @@ public:
 
         // use the thruster states and torque directions established in thrusterSet to find the RCS torques
         for (int i = 0; i < RCS_thrusterSet.size(); i++){ //multiplying the thruster set by the thruster set magnetude
-            RCStorques[i] = torqueMag * RCS_thrusterSet[i];
+            RCStorques(i) = torqueMag * RCS_thrusterSet[i];
         }
 
         if (dynamics.landed || (spacecraft.propellantMass == 0)){
             // if we landed or there is no remaining propellant, RCS should-not/cannot produce torque
             for (int i = 0; i < RCS_thrusterSet.size(); i++){ 
-                RCStorques[i] = 0.0;
+                RCStorques(i) = 0.0;
                 RCS_thrusterSet[i] = 0;
             }
         }
@@ -214,7 +214,7 @@ public:
             // calculate new torque vector given this burnout state
             double RCSburnoutTorque = (totalThrust / activeSets) * leverArm;
             for (int i = 0; i < RCS_thrusterSet.size(); i++){
-                RCStorques[i] = RCSburnoutTorque * RCS_thrusterSet[i];
+                RCStorques(i) = RCSburnoutTorque * RCS_thrusterSet[i];
             }
         } else {
             spacecraft.propellantMass -= massToBurn;
