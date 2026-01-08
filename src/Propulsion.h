@@ -109,23 +109,20 @@ public:
 
     }
 
-    void updateMass(double dt){
-        // updates prop mass, total mass, cg location, and inertia tensor
+    void updateMassFromEngine(double dt){
+        // updates prop mass from engine thrust
 
         double mDot_requested = thrustEngine / v_e;
         double massToBurn = mDot_requested * dt;
         
         if (massToBurn > spacecraft.propellantMass) { // check if there even is the mass we need to burn
-            // if not, but what we have and set prop tank to 0
+            // if not, burn what we have and set prop tank to 0
             thrustEngine = (spacecraft.propellantMass * v_e) / dt;
             spacecraft.propellantMass = 0.0;
         } else {
             spacecraft.propellantMass -= massToBurn;
         }
 
-        spacecraft.totalMass = spacecraft.dryMass + spacecraft.propellantMass;
-        spacecraft.updateCG();
-        spacecraft.updateInertia();
     }
 
     double getMaxThrust() const{

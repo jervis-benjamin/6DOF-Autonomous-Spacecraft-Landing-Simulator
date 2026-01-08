@@ -99,4 +99,10 @@ public:
                                      - pow( (dryMass * vehHeight + propellantMass * propHeight), 2.0 ) / (4.0 * totalMass);
         inertia(2,2) = inertia(1,1);
     }
+
+    void updateMassProperties(){
+        totalMass = dryMass + propellantMass;
+        updateCG();
+        updateInertia();
+    }
 };

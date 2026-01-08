@@ -70,13 +70,15 @@ int main() {
 
         - get guidance velocity information, roll setpoint (typically/always 0 deg)
         - get thrust direction from propulsion using guidance velocity
-        - run tvc and/or rcs
+        - update propMass from engine
+        - run tvc 
             - if thrust is low or tvc is at max gimbal, run rcs. else, tvc is the primary method
             - tvc controller outputs deflections which get converted into a thrust and torque vector
             - rcs controller outputs a torque vector
         - run rcs for roll correction using roll setpoint from guidance
+        - update propMass from RCS
         - sum the body forces and torques and apply them to update the state vector
-        - update mass from propulsion as well as inertia and cg
+        - update mass properties
 
 
         

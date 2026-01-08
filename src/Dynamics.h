@@ -147,7 +147,7 @@ private:
                 landed = true;
                 
                 // if we are within landing constrains, level spacecraft and preserve roll
-                Eigen::Vector3d eulerAngles = QuaternionTools::toEulerAngles(QuaternionTools::toWorld(orientation));
+                Eigen::Vector3d eulerAngles = QuaternionTools::toEulerAngles(QuaternionTools::toWorld(orientation)); // deg
                 double roll_deg = eulerAngles(2);
                 Eigen::Vector4d uprightOrientation(1.0, 0.0, 0.0, 0.0);
                 orientation = QuaternionTools::rotateQuat(uprightOrientation, 'x', roll_deg);

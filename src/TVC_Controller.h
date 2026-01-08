@@ -26,10 +26,10 @@ private:
     const Spacecraft& spacecraft;
 
     // controller parameters
-    double pitchKp = 1.0;
-    double pitchKd = 0.5;
-    double yawKp = 1.0;
-    double yawKd = 0.5;
+    double pitchKp = 47000.0;
+    double pitchKd = 5.0;
+    double yawKp = 47000.0;
+    double yawKd = 5.0;
 
     // physical considerations
     const double gimbalLimit = 6.0 * (PI/180); // rad (from Apollo Design Development Documentation)
@@ -93,7 +93,7 @@ public:
         yawDeflectionRad = (yawKp * yawError) - (yawKd * dynamics.angularVelocity.z());
 
         // normalize control effort by thrust
-        if (thrustMag > (propulsion.getMaxThrust()*0.1)){ // only if TVC still has controll authority
+        if ((thrustMag > (propulsion.getMaxThrust()*0.1)) && !dynamics.landed){ // only if TVC still has controll authority and we arent on the ground yet
             pitchDeflectionRad /= thrustMag;
             yawDeflectionRad /= thrustMag;
         }else{
