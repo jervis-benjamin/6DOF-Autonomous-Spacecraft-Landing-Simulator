@@ -21,9 +21,9 @@ using namespace std;
 class TVC_Controller {
 
 private:
+    const Spacecraft& spacecraft;
     const Dynamics& dynamics;
     const Propulsion& propulsion;
-    const Spacecraft& spacecraft;
 
     // controller parameters
     double pitchKp = 47000.0;
@@ -53,7 +53,7 @@ public:
     Eigen::Vector3d actualThrustVector{0.0, 0.0, 0.0}; // N
     Eigen::Vector3d TVCtorques{0.0, 0.0, 0.0}; // N-m
     
-    TVC_Controller(const Dynamics& dn, const Propulsion& pr, const Spacecraft& sc) : dynamics(dn), propulsion(pr), spacecraft(sc){}
+    TVC_Controller(const Spacecraft& sc, const Dynamics& dn, const Propulsion& pr) : spacecraft(sc), dynamics(dn), propulsion(pr){}
 
     void runTVC(double dt, double thrustMag, Eigen::Vector3d idealThrustDirWorld){
         // calculates TVC gimbal deflections to align with a desired thrust vector, and calculates the actual thrust and torque applied by the TVC system

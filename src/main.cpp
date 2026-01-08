@@ -19,9 +19,11 @@ TODOs:
 
 #include "Spacecraft.h"
 #include "Dynamics.h"
-#include "Propulsion.h"
 #include "World.h"
 //#include "Guidance.h"
+#include "Propulsion.h"
+#include "TVC_Controller.h"
+#include "RCS_Controller.h"
 
 using namespace std;
 
@@ -45,8 +47,10 @@ int main() {
     World world = World::Moon();
     Spacecraft spacecraft;
     Dynamics dynamics(spacecraft, world);
-    Propulsion propulsion(spacecraft, dynamics, world);
     //Guidance guidance(spacecraft, dynamics, world);
+    Propulsion propulsion(spacecraft, dynamics, world);
+    TVC_Controller tvc(spacecraft, dynamics, propulsion);
+    RCS_Controller rcs(spacecraft, dynamics);
 
     const double dt = 0.01; // s
     const double tEnd = 600.0; // s
@@ -55,10 +59,14 @@ int main() {
     vector<StateRecord> simData;
 
     /* Test Inputs */
+    /*
     //Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d bodyForce = Eigen::Vector3d::Zero();
-    double thrust;
     Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
+    */
+
+    /* Body forces */
+    Eigen::Vector3d bodyForces = Eigen::Vector3d::Zero();
+    Eigen::Vector3d bodyTorques = Eigen::Vector3d::Zero();
 
     while ( !(t > tEnd || (dynamics.landed && (dynamics.landingTimer >= dynamics.endTimePost))) ){ 
     //while (t <= tEnd) { 
@@ -79,28 +87,35 @@ int main() {
         - update propMass from RCS
         - sum the body forces and torques and apply them to update the state vector
         - update mass properties
-
-
-        
         */
 
-        /*
-        if (dynamics.position.z() < 150.0){
-            propulsion.maintainDescentRate = false; // for testing TG phases for guidance
-            //spacecraft.targetDescentRate = -1.5;
-        }else if (dynamics.position.z() < 2000.0){ // roughly start of TG-2
-            propulsion.maintainDescentRate = false; 
-            //spacecraft.targetDescentRate = -20.0;
-        } else{
-            propulsion.maintainDescentRate = false;
-        }
-        
+        // reset net forces and torques
+        bodyForces = Eigen::Vector3d::Zero();
+        bodyTorques = Eigen::Vector3d::Zero();
 
-        thrust = propulsion.update(dt, 0);
-        bodyForce.x() = thrust;
-        // tvc and rcs here
-        dynamics.update(dt, bodyForce, testTorque);
-        */
+        // guidance
+        // update mass from prop
+        // run tvc
+        // run rcs
+
+        /* for RCS tuning */
+        Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
+        // building a target quaternion with defined angles
+        // FOLLOWING PITCH-YAW-ROLL
+        Eigen::Vector4d targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', 5.0);
+        targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', 0.0);
+        targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', 0.0);
+        targetQuat.normalize();
+
+        double rollSetpoint = 0.0; // deg
+        double ignoreRoll = true;
+
+        rcs.runRCS(dt, targetQuat, ignoreRoll, rollSetpoint);
+        rcs.updateMassFromRCS(dt);
+
+        dynamics.update(dt, bodyForces, bodyTorques);
+        spacecraft.updateMassProperties();
+
 
 
         /* Recording Sim Data*/
@@ -170,7 +185,7 @@ int main() {
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ,roll,pitch,yaw,totalMass,propMass,x_cg,Ixx,Iyy,Izz,throttleLevel,thrustEngine,propLevel\n";    
+    outFile << "time (s), posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%)\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -183,7 +198,7 @@ int main() {
                 << rec.angularVelocity(0) << "," << rec.angularVelocity(1) << "," 
                 << rec.angularVelocity(2) << ","
 
-                << rec.eulerAngles_deg(2) << "," << rec.eulerAngles_deg(0) << ","  << rec.eulerAngles_deg(1)  << "," 
+                << rec.eulerAngles_deg(0) << "," << rec.eulerAngles_deg(1) << ","  << rec.eulerAngles_deg(2)  << "," 
                 
                 << rec.totalMass << "," << rec.propellantMass << ","
 

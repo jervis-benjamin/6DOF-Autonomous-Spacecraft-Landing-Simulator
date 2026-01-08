@@ -20,13 +20,13 @@ using namespace std;
 
 class RCS_Controller{
 private:
-    const Dynamics& dynamics;
     Spacecraft& spacecraft;
+    const Dynamics& dynamics;
 
     // controller parameters
-    Eigen::Vector3d Kp{2.0, 2.0, 2.0};
+    Eigen::Vector3d Kp{1500.0, 1500.0, 1500.0};
     Eigen::Vector3d Ki{0.0001, 0.0001, 0.0001};
-    Eigen::Vector3d Kd{1.5, 1.5, 1.5};
+    Eigen::Vector3d Kd{250, 250, 250};
     Eigen::Vector3d integralError = Eigen::Vector3d::Zero();
     double iLimit = 0.5; // integral term anti-windup limit
     double deadband = 0.005; // ~0.28 degrees
@@ -54,17 +54,21 @@ public:
     array<int, 3> RCS_thrusterSet = {0, 0, 0}; // 0 -> inactive, -1 -> negative torque thruster set, +1 -> positive torque thruster set 
     Eigen::Vector3d RCStorques{0.0, 0.0, 0.0}; // N-m
 
-    RCS_Controller(const Dynamics& dn, Spacecraft& sc) : dynamics(dn), spacecraft(sc) {
+    RCS_Controller(Spacecraft& sc, const Dynamics& dn) : spacecraft(sc), dynamics(dn) {
         leverArm = spacecraft.vehWidth / 2.0;
         torqueMag = leverArm * nomThrust * 2; // multipy by 2 since there are 2 thrusters that fire per axis (torque from a single thruster set)
     }
 
-    void runRCS(double dt, Eigen::Vector3d idealThrustDirWorld, bool ignoreRoll, double rollSetpointDeg){
+    void runRCS(double dt, Eigen::Vector4d tunningTargetQuat, bool ignoreRoll, double rollSetpointDeg){
+    //void runRCS(double dt, Eigen::Vector3d idealThrustDirWorld, bool ignoreRoll, double rollSetpointDeg){
+        /* for tunning, we set targetQuat equat to the target quat in main */
+
 
         // rotate the desired thrust direction into the body frame
-        Eigen::Vector3d idealThrustDirBody = QuaternionTools::rotateVector(QuaternionTools::inverse(dynamics.getWorldOrientation()), idealThrustDirWorld);
+        // Eigen::Vector3d idealThrustDirBody = QuaternionTools::rotateVector(QuaternionTools::inverse(dynamics.getWorldOrientation()), idealThrustDirWorld);
 
         /* forming a target quaternion by solving for the angle and rotation axis */
+        /* 
         // angle component
         double cosAngle = bodyXdir.dot(idealThrustDirBody);
         cosAngle = std::clamp(cosAngle, -1.0, 1.0); // handling potential floating point errors
@@ -85,6 +89,23 @@ public:
         targetQuat = QuaternionTools::multiply(dynamics.getWorldOrientation(), targetQuat);
         targetQuat.normalize();
 
+        if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
+            Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
+            Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
+
+            // rebuilting quaternion with roll setpoint 
+            // FOLLOWING PITCH-YAW-ROLL
+            targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', targetInEuler[0]);
+            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', targetInEuler[1]);
+            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', rollSetpointDeg);
+            targetQuat.normalize();
+        }
+        */
+
+        // DELETE THIS LINE WHEN NOT TUNNING
+        Eigen::Vector4d targetQuat = tunningTargetQuat;
+
+        // DELETE THIS BLOCK WHEN NOT TUNNING
         if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
             Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
             Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
@@ -127,8 +148,8 @@ public:
         // apply PID to get torque commands
         Eigen::Vector3d torqueCmd = (Kp.array() * axisError.array()) + (Ki.array() * integralError.array()) + (Kd.array() * rateError.array());
 
-        // ignore roll command torque when we are not concerned about maintaining a certain 
-        // roll position (should still theoretically get us to the target orientation)
+        // ignore roll command torque to save fuel when we are not concerned about maintaining 
+        // a certain roll position (should still theoretically get us to the target orientation)
         if (ignoreRoll){
             torqueCmd.x() = 0.0;
             integralError.x() = 0.0;

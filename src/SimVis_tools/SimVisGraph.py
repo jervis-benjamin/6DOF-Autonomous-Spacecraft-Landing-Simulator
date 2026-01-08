@@ -1,233 +1,50 @@
 # SimVisGraph
-# Used for outputting trajectory data on graphs
+# Used for plotting sim data off of csv
 
-import pandas as pd 
-import numpy as np
+import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-simData = pd.read_csv('simulation_data.csv') # time,posX,posY,posZ,velX,velY,velZ,quatW,quatX,quatY,quatZ,omegX,omegY,omegZ
+# csv config settings
+simData = pd.read_csv("simulation_data.csv")
+columns = list(simData.columns)
 
-time = simData['time'].tolist()
+# csv config settings
+root = tk.Tk()
+root.title("CSV Plotter")
+root.geometry("300x200")
 
-posX = simData['posX'].tolist()
-posY = simData['posY'].tolist()
-posZ = simData['posZ'].tolist()
+# x-axis dropdown menu
+tk.Label(root, text="X Axis").pack(pady=(10, 0))
+x_var = tk.StringVar(value=columns[0])
+x_dropdown = ttk.Combobox(root, textvariable=x_var, values=columns, state="readonly")
+x_dropdown.pack()
 
-velX = simData['velX'].tolist()
-velY = simData['velY'].tolist()
-velZ = simData['velZ'].tolist()
+# y-axis dropdown menu
+tk.Label(root, text="Y Axis").pack(pady=(10, 0))
+y_var = tk.StringVar(value=columns[1] if len(columns) > 1 else columns[0])
+y_dropdown = ttk.Combobox(root, textvariable=y_var, values=columns, state="readonly")
+y_dropdown.pack()
 
-quatW = simData['quatW'].tolist()
-quatX = simData['quatX'].tolist()
-quatY = simData['quatY'].tolist()
-quatZ = simData['quatZ'].tolist()
 
-omegX = simData['omegX'].tolist()
-omegY = simData['omegY'].tolist()
-omegZ = simData['omegZ'].tolist()
+def make_plot():
+    # creates a matplotlib plot of the chosen x and y columns
 
-roll = simData['roll'].tolist()
-pitch = simData['pitch'].tolist()
-yaw = simData['yaw'].tolist()
+    x_col = x_var.get()
+    y_col = y_var.get()
 
-totalMass = simData['totalMass'].tolist()
-propMass = simData['propMass'].tolist()
-x_cg = simData['x_cg'].tolist()
-Ixx = simData['Ixx'].tolist()
-Iyy = simData['Iyy'].tolist()
-Izz = simData['Izz'].tolist()
-
-throttleLevel = simData['throttleLevel'].tolist()
-thrustEngine = simData['thrustEngine'].tolist()
-propLevel = simData['propLevel'].tolist()
-
-fig, axs = plt.subplots(2, 3, figsize=(12, 6))
-
-# Top row
-axs[0, 0].plot(time, posX)
-axs[0, 0].set_title('PosX vs Time')
-axs[0, 0].set_xlabel('Time (s)')
-axs[0, 0].set_ylabel('PosX (m)')
-
-axs[0, 1].plot(time, posY)
-axs[0, 1].set_title('PosY vs Time')
-axs[0, 1].set_xlabel('Time (s)')
-axs[0, 1].set_ylabel('PosY (m)')
-
-axs[0, 2].plot(time, posZ)
-axs[0, 2].set_title('PosZ vs Time')
-axs[0, 2].set_xlabel('Time (s)')
-axs[0, 2].set_ylabel('PosZ (m)')
-
-# Bottom row
-axs[1, 0].plot(time, roll)
-axs[1, 0].set_title('Roll vs Time')
-axs[1, 0].set_xlabel('Time (s)')
-axs[1, 0].set_ylabel('Roll (deg)')
-
-axs[1, 1].plot(time, pitch)
-axs[1, 1].set_title('Pitch vs Time')
-axs[1, 1].set_xlabel('Time (s)')
-axs[1, 1].set_ylabel('Pitch (deg)')
-
-axs[1, 2].plot(time, yaw)
-axs[1, 2].set_title('Yaw vs Time')
-axs[1, 2].set_xlabel('Time (s)')
-axs[1, 2].set_ylabel('Yaw (deg)')
-
-for row in axs:
-    for ax in row:
-        ax.grid(True)
-
-fig.tight_layout()
-#plt.show()
-
-fig1, axs1 = plt.subplots(2, 3, figsize=(12, 6))
-# Top row
-axs1[0, 0].plot(time, velX)
-axs1[0, 0].set_title('VelX vs Time')
-axs1[0, 0].set_xlabel('Time (s)')
-axs1[0, 0].set_ylabel('VelX (m/s)')
-
-axs1[0, 1].plot(time, velY)
-axs1[0, 1].set_title('VelY vs Time')
-axs1[0, 1].set_xlabel('Time (s)')
-axs1[0, 1].set_ylabel('VelY (m/s)')
-
-axs1[0, 2].plot(time, velZ)
-axs1[0, 2].set_title('VelZ vs Time')
-axs1[0, 2].set_xlabel('Time (s)')
-axs1[0, 2].set_ylabel('VelZ (m/s)')
-
-# Bottom row
-axs1[1, 0].plot(time, omegX)
-axs1[1, 0].set_title('OmegaX vs Time')
-axs1[1, 0].set_xlabel('Time (s)')
-axs1[1, 0].set_ylabel('OmegaX (rad/s)')
-
-axs1[1, 1].plot(time, omegY)
-axs1[1, 1].set_title('OmegaY vs Time')
-axs1[1, 1].set_xlabel('Time (s)')
-axs1[1, 1].set_ylabel('OmegaY (rad/s)')
-
-axs1[1, 2].plot(time, omegZ)
-axs1[1, 2].set_title('OmegaZ vs Time')
-axs1[1, 2].set_xlabel('Time (s)')
-axs1[1, 2].set_ylabel('OmegaZ (rad/s)')
-
-for row in axs1:
-    for ax in row:
-        ax.grid(True)
-
-fig1.tight_layout()
-#plt.show()
-
-fig2, axs2 = plt.subplots(2, 2, figsize=(12, 6))
-# Top row
-axs2[0, 0].plot(time, quatW)
-axs2[0, 0].set_title('quatW vs Time')
-axs2[0, 0].set_xlabel('Time (s)')
-axs2[0, 0].set_ylabel('quatW')
-
-axs2[0, 1].plot(time, quatX)
-axs2[0, 1].set_title('quatX vs Time')
-axs2[0, 1].set_xlabel('Time (s)')
-axs2[0, 1].set_ylabel('quatX')
-
-# Bottom row
-axs2[1, 0].plot(time, quatY)
-axs2[1, 0].set_title('quatY vs Time')
-axs2[1, 0].set_xlabel('Time (s)')
-axs2[1, 0].set_ylabel('quatY')
-
-axs2[1, 1].plot(time, quatZ)
-axs2[1, 1].set_title('quatZ vs Time')
-axs2[1, 1].set_xlabel('Time (s)')
-axs2[1, 1].set_ylabel('quatZ')
-
-for row in axs2:
-    for ax in row:
-        ax.grid(True)
-
-fig2.tight_layout()
-#plt.show()
-
-fig3, axs3 = plt.subplots(2, 3, figsize=(12, 6))
-
-# ----- Top row -----
-axs3[0, 0].plot(time, totalMass)
-axs3[0, 0].set_title('Total Mass vs Time')
-axs3[0, 0].set_xlabel('Time (s)')
-axs3[0, 0].set_ylabel('Mass (kg)')
-
-axs3[0, 1].plot(time, propMass)
-axs3[0, 1].set_title('Propellant Mass vs Time')
-axs3[0, 1].set_xlabel('Time (s)')
-axs3[0, 1].set_ylabel('Prop Mass (kg)')
-
-axs3[0, 2].plot(time, x_cg)
-axs3[0, 2].set_title('x_cg vs Time')
-axs3[0, 2].set_xlabel('Time (s)')
-axs3[0, 2].set_ylabel('Center of Gravity (m)')
-
-# ----- Bottom row -----
-axs3[1, 0].plot(time, Ixx)
-axs3[1, 0].set_title('Ixx vs Time')
-axs3[1, 0].set_xlabel('Time (s)')
-axs3[1, 0].set_ylabel('Ixx (kg·m²)')
-
-axs3[1, 1].plot(time, Iyy)
-axs3[1, 1].set_title('Iyy vs Time')
-axs3[1, 1].set_xlabel('Time (s)')
-axs3[1, 1].set_ylabel('Iyy (kg·m²)')
-
-axs3[1, 2].plot(time, Izz)
-axs3[1, 2].set_title('Izz vs Time')
-axs3[1, 2].set_xlabel('Time (s)')
-axs3[1, 2].set_ylabel('Izz (kg·m²)')
-
-for row in axs3:
-    for ax in row:
-        ax.grid(True)
-
-fig3.tight_layout()
-#plt.show()
-
-fig4, axs4 = plt.subplots(1, 3, figsize=(15, 4))
-
-axs4[0].plot(time, throttleLevel)
-axs4[0].set_title('Throttle Level vs Time')
-axs4[0].set_xlabel('Time (s)')
-axs4[0].set_ylabel('Throttle Level (%)')
-
-axs4[1].plot(time, thrustEngine)
-axs4[1].set_title('Engine Thrust vs Time')
-axs4[1].set_xlabel('Time (s)')
-axs4[1].set_ylabel('Thrust (N)')
-
-axs4[2].plot(time, propLevel)
-axs4[2].set_title('Propellant Level vs Time')
-axs4[2].set_xlabel('Time (s)')
-axs4[2].set_ylabel('Propellant Level (%)')
-
-for ax in axs4:
+    fig, ax = plt.subplots()
+    ax.plot(simData[x_col], simData[y_col])
+    ax.set_xlabel(x_col)
+    ax.set_ylabel(y_col)
+    ax.set_title(f"{y_col} vs {x_col}")
     ax.grid(True)
 
-fig4.tight_layout()
-#plt.show()
+    # keep plot maker window visible in the background
+    plt.show(block=False)
 
-# -- 3D plots -- #
-fig3d = plt.figure()
-ax = fig3d.add_subplot(111, projection='3d')
+# make plot button
+tk.Button(root, text="Make Plot", command=make_plot).pack(pady=20)
 
-ax.plot(posX, posY, posZ, label='3D trajectory')
-ax.set_xlabel('X Position (m)')
-ax.set_ylabel('Y Position (m)')
-ax.set_zlabel('Z Position (m)')
-ax.set_title('Spacecraft Trajectory')
-
-ax.legend()
-
-
-plt.show() 
+root.mainloop()
