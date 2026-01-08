@@ -79,10 +79,14 @@ public:
 
         // constructing quaternion
         Eigen::Vector4d targetQuat{ cos(angle/2.0), axis_hat.x()*sin(angle/2.0), axis_hat.y()*sin(angle/2.0), axis_hat.z()*sin(angle/2.0) };
+        targetQuat.normalize();
+
+        // since the quaternion above is relative, we will need to convert it into a world mapping quaternion to be in the same frame as the vehicle orientation
+        targetQuat = QuaternionTools::multiply(dynamics.getWorldOrientation(), targetQuat);
+        targetQuat.normalize();
 
         if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
             Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
-
             Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
 
             // rebuilting quaternion with roll setpoint 
@@ -90,17 +94,17 @@ public:
             targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', targetInEuler[0]);
             targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', targetInEuler[1]);
             targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', rollSetpointDeg);
+            targetQuat.normalize();
         }
-        targetQuat.normalize();
-
-        // check to see if target quaternion is the shortest path from the current orientation of the vehcile
-        if (targetQuat.dot(dynamics.getWorldOrientation()) < 0){
-            targetQuat = -targetQuat; // if not, correct such that targetQuat is the shortest path
-        }
-
         
-        // quaternion error is already the target quaternion
-        Eigen::Vector4d errQuat = targetQuat;
+        // compute quaternion error
+        Eigen::Vector4d errQuat = QuaternionTools::multiply(QuaternionTools::inverse(dynamics.getWorldOrientation()), targetQuat);
+        errQuat.normalize();
+
+        // verify if this enscribes the shortest path rotation
+        if (errQuat[0] < 0){
+            errQuat = -errQuat; 
+        }
 
         // proportional term
         Eigen::Vector3d axisError{errQuat[1], errQuat[2], errQuat[3]};
