@@ -18,12 +18,13 @@ Simulating the autonomous landing of a spacecraft to meet trajectory and landing
 3) **[Completed]** Develop propulsion mechanics (mass depletion, descent rate controller)
 4) **[Completed]** Integrate controllers for TVC and RCS (full 6DoF control)
 5) [_In progress]_ Add guidance phases and respective control mechanics
-6) Transition to LQR controller
-7) Implement more advanced controller logic? (ex. H-infinity, MPC)
-8) Integrate aerodynamics and test previous controllers
-9) Transition from flat world physics to rotating sphere
-10) Update visualization tool to accommodate for 3D graphics and rotating spherical world 
-11) Integrate controller (PID -> LQR -> MPC)
+6) Achieve controlled autonomous descent
+7) Add Monte-Carlo functionality
+
+Tentative Additons:
+- Implement aerodynamics
+- Implement more advanced controller laws (ex. LQR, H-infinity, MPC)
+- Transition from flat world physics to rotating sphere
  
 ### Resources Referenced  
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 
