@@ -5,6 +5,7 @@ Owns:
 - Scheduling velocity setpoints during various phases of descent
 */
 
+// lock out translational correction after a certain altitude (keep vehicle straight up and only worry about landing)
 
 #pragma once
 

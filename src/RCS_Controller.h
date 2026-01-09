@@ -73,7 +73,8 @@ public:
             // rotate the desired thrust direction into the body frame
             Eigen::Vector3d idealThrustDirBody = QuaternionTools::rotateVector(QuaternionTools::inverse(dynamics.getWorldOrientation()), idealThrustDirWorld);
 
-            /* forming a target quaternion by solving for the angle and rotation axis */
+            /*
+            // forming a target quaternion by solving for the angle and rotation axis 
             // angle component
             double cosAngle = bodyXdir.dot(idealThrustDirBody);
             cosAngle = std::clamp(cosAngle, -1.0, 1.0); // handling potential floating point errors
@@ -93,6 +94,12 @@ public:
             targetQuat(3) = axis_hat.z()*sin(angle/2.0);
 
             targetQuat.normalize();
+            */
+
+            // using eigen's prebuilt function accomplishes the same thing but also handles the anti-parellel case
+            Eigen::Quaterniond q;
+            q.setFromTwoVectors(bodyXdir, idealThrustDirBody);
+            targetQuat = Eigen::Vector4d(q.w(), q.x(), q.y(), q.z());
 
            // since the quaternion above is relative, we will need to convert it into a world mapping quaternion to be in the same frame as the vehicle orientation
             targetQuat = QuaternionTools::multiply(dynamics.getWorldOrientation(), targetQuat);

@@ -156,7 +156,7 @@ plume_vertices, plume_faces = create_cone_geometry(length=0.6, base_radius=0.16)
 thrust_plume = scene.visuals.Mesh(
     vertices=plume_vertices,
     faces=plume_faces,
-    color=(1.0, 0.5, 0.0, 0.0),  # Start invisible - single color tuple
+    color=(1.0, 0.5, 0.0, 0.0), 
     shading=None,
     parent=view.scene
 )
@@ -356,7 +356,7 @@ def update(ev):
     spacecraft_transform.matrix = rot_matrix_4x4
     spacecraft_transform.translate(spacecraft_pos)
 
-    # Update thrust plume - MOVED HERE, RIGHT AFTER rot_matrix_4x4 IS CREATED
+    # Update thrust plume
     if thr > 0.01:  # Show plume if throttle is above threshold
         thrust_plume.visible = True
         

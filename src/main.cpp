@@ -103,9 +103,9 @@ int main() {
         /* for RCS tuning */
         // FOLLOWING PITCH-YAW-ROLL
         Eigen::Vector3d EulerSetpoints{5.0, 10.0, 3.0}; // pitch, yaw, roll
-        bool directAttitudeControl = true;
+        bool directAttitudeControl = false;
 
-        Eigen::Vector3d testThrustVectorDir(1.0, 0.0, 0.0);
+        Eigen::Vector3d testThrustVectorDir(0.5, 0.5, 0.707);
         bool ignoreRoll = false;
         double rollSetpoint = 5.0; // deg
         /* end of things for RCS tuning */
@@ -172,7 +172,7 @@ int main() {
     if (!dynamics.landed){
             cout << "\n\n=== MAX TIME REACHED ===" << endl;
             cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
-            cout << "Remaining propellant mass: " << spacecraft.propellantMass << " kg" << endl;
+            cout << "Remaining propellant: " << spacecraft.propellantMass / spacecraft.initialPropellantMass << "%" << endl;
         }
     if (dynamics.tippedOver || (dynamics.landed && (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)))){ 
             cout << "Spacecraft has crashed into the surface!" << endl;

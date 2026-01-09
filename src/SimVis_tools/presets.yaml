@@ -1,0 +1,70 @@
+presets:
+  all_position:
+    description: "XYZ Position"
+    plots:
+      - type: 2d
+        x: time (s)
+        y: posX (m)
+
+      - type: 2d
+        x: time (s)
+        y: posY (m)
+
+      - type: 2d
+        x: time (s)
+        y: posZ (m)
+
+      - type: 3d
+        x: posX (m)
+        y: posY (m)
+        z: posZ (m)
+        title: "3D Position"
+
+  all_euler_angles:
+    description: "euler angles (P-Y-R)"
+    plots:
+      - type: 2d
+        x: time (s)
+        y: pitch (deg)
+
+      - type: 2d
+        x: time (s)
+        y: yaw (deg)
+
+      - type: 2d
+        x: time (s)
+        y: roll (deg)
+  
+  attitude_quaternion:
+    description: "orientation in quaternion"
+    plots:
+      - type: 2d
+        x: time (s)
+        y: quatW
+
+      - type: 2d
+        x: time (s)
+        y: quatX
+
+      - type: 2d
+        x: time (s)
+        y: quatY
+
+      - type: 2d
+        x: time (s)
+        y: quatZ
+
+  RCS_thruster_sets:
+    description: "all thruster sets for 3 axis"
+    plots:
+      - type: 2d
+        x: time (s)
+        y: RCS thrusters state (roll)
+
+      - type: 2d
+        x: time (s)
+        y: RCS thrusters state (pitch)
+
+      - type: 2d
+        x: time (s)
+        y: RCS thrusters state (yaw)
