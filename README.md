@@ -21,12 +21,12 @@ Simulating the autonomous landing of a spacecraft to meet trajectory and landing
 6) Achieve controlled autonomous descent
 7) Add Monte-Carlo functionality
 
-Tentative Additons:
-- Implement aerodynamics
-- Implement more advanced controller laws (ex. LQR, H-infinity, MPC)
-- Transition from flat world physics to rotating sphere
- 
-### Resources Referenced  
+### Tentative Additons:
+  - Implement aerodynamics
+  - Implement more advanced controller laws (ex. LQR, H-infinity, MPC)
+  - Transition from flat world physics to rotating sphere
+
+## Resources Referenced  
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 
   - Used for simulating Apollo landing trajectory in the sim
  - Apollo Lunar Decent and Ascent Trajectories: https://www.lpi.usra.edu/lunar/documents/Bennett_NASA-TM-X-58040.pdf
