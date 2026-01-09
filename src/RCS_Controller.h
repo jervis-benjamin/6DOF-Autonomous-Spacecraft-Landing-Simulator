@@ -127,9 +127,7 @@ public:
         
 
         /*
-        
         run PID Controller
-
         */
 
         // compute quaternion error
