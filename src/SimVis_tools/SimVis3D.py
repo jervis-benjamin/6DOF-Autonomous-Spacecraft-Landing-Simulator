@@ -57,16 +57,16 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16) / 255.0 for i in (0, 2, 4))
 
 df = pd.read_csv("simulation_data.csv")
-pos = df[["posX", "posY", "posZ"]].values
-vel = df[["velX", "velY", "velZ"]].values
+pos = df[["posX (m)", "posY (m)", "posZ (m)"]].values
+vel = df[["velX (m/s)", "velY (m/s)", "velZ (m/s)"]].values
 
 quat = df[["quatW", "quatX", "quatY", "quatZ"]].values
-euler_ang = df[["pitch", "yaw", "roll"]].values
+euler_ang = df[["pitch (deg)", "yaw (deg)", "roll (deg)"]].values
 
-throttle = df["throttleLevel"].values / 100
-prop = df["propLevel"].values
+throttle = df["throttleLevel (%)"].values / 100
+prop = df["propLevel (%)"].values
 
-times = df["time"].values
+times = df["time (s)"].values
 
 mesh = trimesh.load("lunar_lander.stl")
 

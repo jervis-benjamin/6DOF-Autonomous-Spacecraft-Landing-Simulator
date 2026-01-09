@@ -24,12 +24,12 @@ private:
     const Dynamics& dynamics;
 
     // controller parameters
-    Eigen::Vector3d Kp{1500.0, 1500.0, 1500.0};
-    Eigen::Vector3d Ki{0.0001, 0.0001, 0.0001};
-    Eigen::Vector3d Kd{250, 250, 250};
+    Eigen::Vector3d Kp{3000.0, 4000.0, 4000.0}; // increase Kd to get faster response at the cost of more fuel expenditure and more valve chattering
+    Eigen::Vector3d Ki{0.01, 0.01, 0.01};
+    Eigen::Vector3d Kd{6000.0, 10000.0, 10000.0};
     Eigen::Vector3d integralError = Eigen::Vector3d::Zero();
     double iLimit = 0.5; // integral term anti-windup limit
-    double deadband = 0.005; // ~0.28 degrees
+    double deadband = 0.001; // ~0.05 degrees
 
     // Marquardt R‑4D thruster specs
     const double nomThrust = 490.0; // N
@@ -39,8 +39,8 @@ private:
 
     // using hysteresis when setting thruster activation torque to prevent chattering (
     // thresholds are expressed in percent of nominal torque (torqueCmd/torqueMag)
-    const double upperThreshold = 0.15; // activate RCS 
-    const double lowerThreshold = 0.05; // deactivate RCS
+    const double upperThreshold = 0.002; // activate RCS 
+    const double lowerThreshold = 0.001; // deactivate RCS
 
     // direction of body +X
     const Eigen::Vector3d bodyXdir{1.0, 0.0, 0.0};
@@ -59,65 +59,79 @@ public:
         torqueMag = leverArm * nomThrust * 2; // multipy by 2 since there are 2 thrusters that fire per axis (torque from a single thruster set)
     }
 
-    void runRCS(double dt, Eigen::Vector4d tunningTargetQuat, bool ignoreRoll, double rollSetpointDeg){
-    //void runRCS(double dt, Eigen::Vector3d idealThrustDirWorld, bool ignoreRoll, double rollSetpointDeg){
-        /* for tunning, we set targetQuat equat to the target quat in main */
+   void runRCS(double dt, Eigen::Vector3d idealThrustDirWorld, bool ignoreRoll, double rollSetpointDeg, Eigen::Vector3d desiredAttitudeEuler, bool directAttitudeControl) {
+        
+        /*
+        
+        obtain the target quaternion based on RCS controller mode
 
-
-        // rotate the desired thrust direction into the body frame
-        // Eigen::Vector3d idealThrustDirBody = QuaternionTools::rotateVector(QuaternionTools::inverse(dynamics.getWorldOrientation()), idealThrustDirWorld);
-
-        /* forming a target quaternion by solving for the angle and rotation axis */
-        /* 
-        // angle component
-        double cosAngle = bodyXdir.dot(idealThrustDirBody);
-        cosAngle = std::clamp(cosAngle, -1.0, 1.0); // handling potential floating point errors
-        double angle = acos(cosAngle); // rad
-
-        // axis component
-        Eigen::Vector3d axis = bodyXdir.cross(idealThrustDirBody);
-        Eigen::Vector3d axis_hat{0.0, 0.0, 0.0};
-        if (axis.norm() > 0.0){
-            axis_hat = axis.normalized();
-        }
-
-        // constructing quaternion
-        Eigen::Vector4d targetQuat{ cos(angle/2.0), axis_hat.x()*sin(angle/2.0), axis_hat.y()*sin(angle/2.0), axis_hat.z()*sin(angle/2.0) };
-        targetQuat.normalize();
-
-        // since the quaternion above is relative, we will need to convert it into a world mapping quaternion to be in the same frame as the vehicle orientation
-        targetQuat = QuaternionTools::multiply(dynamics.getWorldOrientation(), targetQuat);
-        targetQuat.normalize();
-
-        if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
-            Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
-            Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
-
-            // rebuilting quaternion with roll setpoint 
-            // FOLLOWING PITCH-YAW-ROLL
-            targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', targetInEuler[0]);
-            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', targetInEuler[1]);
-            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', rollSetpointDeg);
-            targetQuat.normalize();
-        }
         */
 
-        // DELETE THIS LINE WHEN NOT TUNNING
-        Eigen::Vector4d targetQuat = tunningTargetQuat;
+        Eigen::Vector4d targetQuat = dynamics.getWorldOrientation(); // setting targetQuat to the current orientation as a default -> no error
+    
+        if(!directAttitudeControl){ // if RCS is focusing on aligning the vehicle with the desired thrust vector
+            // rotate the desired thrust direction into the body frame
+            Eigen::Vector3d idealThrustDirBody = QuaternionTools::rotateVector(QuaternionTools::inverse(dynamics.getWorldOrientation()), idealThrustDirWorld);
 
-        // DELETE THIS BLOCK WHEN NOT TUNNING
-        if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
-            Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
-            Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
+            /* forming a target quaternion by solving for the angle and rotation axis */
+            // angle component
+            double cosAngle = bodyXdir.dot(idealThrustDirBody);
+            cosAngle = std::clamp(cosAngle, -1.0, 1.0); // handling potential floating point errors
+            double angle = acos(cosAngle); // rad
 
-            // rebuilting quaternion with roll setpoint 
+            // axis component
+            Eigen::Vector3d axis = bodyXdir.cross(idealThrustDirBody);
+            Eigen::Vector3d axis_hat{0.0, 0.0, 0.0};
+            if (axis.norm() > 0.0){
+                axis_hat = axis.normalized();
+            }
+
+            // constructing quaternion from axis-angle
+            targetQuat(0) = cos(angle/2.0);
+            targetQuat(1) = axis_hat.x()*sin(angle/2.0);
+            targetQuat(2) = axis_hat.y()*sin(angle/2.0);
+            targetQuat(3) = axis_hat.z()*sin(angle/2.0);
+
+            targetQuat.normalize();
+
+           // since the quaternion above is relative, we will need to convert it into a world mapping quaternion to be in the same frame as the vehicle orientation
+            targetQuat = QuaternionTools::multiply(dynamics.getWorldOrientation(), targetQuat);
+            targetQuat.normalize();
+
+            if(!ignoreRoll){ // if we need to maintain a certain roll position, we will need to ensure that our target orientation contains that roll
+                // keep this in the thrust control block after testing
+                Eigen::Vector3d targetInEuler = QuaternionTools::toEulerAngles(targetQuat); // deg
+                Eigen::Vector4d baseOrientation{1.0, 0.0, 0.0, 0.0};
+                
+                // rebuilting quaternion with roll setpoint 
+                // FOLLOWING PITCH-YAW-ROLL
+                Eigen::Vector4d customRollAttitude = QuaternionTools::rotateQuat(baseOrientation, 'y', targetInEuler(0));
+                customRollAttitude = QuaternionTools::rotateQuat(customRollAttitude, 'z', targetInEuler(1));
+                customRollAttitude = QuaternionTools::rotateQuat(customRollAttitude, 'x', rollSetpointDeg);
+                customRollAttitude.normalize();
+                targetQuat = QuaternionTools::toWorld(customRollAttitude);
+                targetQuat.normalize();
+            }
+
+        } else { // if RCS is correcting attitude based on a orientation passed into this function:
+            Eigen::Vector4d baseOrientation{1.0, 0.0, 0.0, 0.0};
+            // building a target quaternion with defined angles from desiredAttitudeEuler
             // FOLLOWING PITCH-YAW-ROLL
-            targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', targetInEuler[0]);
-            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', targetInEuler[1]);
-            targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', rollSetpointDeg);
+            Eigen::Vector4d desiredAttitudeQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', desiredAttitudeEuler(0));
+            desiredAttitudeQuat = QuaternionTools::rotateQuat(desiredAttitudeQuat, 'z', desiredAttitudeEuler(1));
+            desiredAttitudeQuat = QuaternionTools::rotateQuat(desiredAttitudeQuat, 'x', desiredAttitudeEuler(2));
+            desiredAttitudeQuat.normalize();
+            targetQuat = QuaternionTools::toWorld(desiredAttitudeQuat);
             targetQuat.normalize();
         }
         
+
+        /*
+        
+        run PID Controller
+
+        */
+
         // compute quaternion error
         Eigen::Vector4d errQuat = QuaternionTools::multiply(QuaternionTools::inverse(dynamics.getWorldOrientation()), targetQuat);
         errQuat.normalize();
@@ -150,11 +164,11 @@ public:
 
         // ignore roll command torque to save fuel when we are not concerned about maintaining 
         // a certain roll position (should still theoretically get us to the target orientation)
-        if (ignoreRoll){
+        if (ignoreRoll && !directAttitudeControl){
             torqueCmd.x() = 0.0;
             integralError.x() = 0.0;
         }
-
+        
 
         /* 
         At this point we have a "command torque". we will need to compare if the magnetude of these torques are within the firing thresholds.
@@ -191,6 +205,7 @@ public:
                 RCS_thrusterSet[i] = 0;
             }
         }
+        
     }
 
     void updateMassFromRCS(double dt){

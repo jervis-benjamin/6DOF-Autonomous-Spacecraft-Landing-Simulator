@@ -82,7 +82,8 @@ public:
         rotationQuat(2) = unitAxis(1) * sin(angle/2.0);                  
         rotationQuat(3) = unitAxis(2) * sin(angle/2.0);    
 
-        newQuat = multiply(rotationQuat, q);
+        //newQuat = multiply(rotationQuat, q);
+        newQuat = multiply(q, rotationQuat);
         normalize(newQuat);
 
         return newQuat;

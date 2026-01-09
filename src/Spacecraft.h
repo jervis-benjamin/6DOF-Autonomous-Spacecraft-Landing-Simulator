@@ -45,9 +45,9 @@ public:
 
     
     Spacecraft() {
-        propellantMass = 8200 / 4; // kg (roughly the descent stage prop mass of the lunar module)
+        propellantMass = 8200; // kg (roughly the descent stage prop mass of the lunar module)
         initialPropellantMass = 8200;
-        //initialPropellantMass = propellantMass; 
+        initialPropellantMass = propellantMass; 
         totalMass = dryMass + propellantMass;
     
         cg = Eigen::Vector3d::Zero();

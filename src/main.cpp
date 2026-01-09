@@ -101,20 +101,19 @@ int main() {
         // run rcs
 
         /* for RCS tuning */
-        Eigen::Vector4d baseOrientation = QuaternionTools::referenceQuat;
-        // building a target quaternion with defined angles
         // FOLLOWING PITCH-YAW-ROLL
-        Eigen::Vector4d targetQuat = QuaternionTools::rotateQuat(baseOrientation, 'y', 5.0);
-        targetQuat = QuaternionTools::rotateQuat(targetQuat, 'z', 0.0);
-        targetQuat = QuaternionTools::rotateQuat(targetQuat, 'x', 0.0);
-        targetQuat.normalize();
+        Eigen::Vector3d EulerSetpoints{5.0, 10.0, 3.0}; // pitch, yaw, roll
+        bool directAttitudeControl = true;
 
-        double rollSetpoint = 0.0; // deg
-        double ignoreRoll = true;
+        Eigen::Vector3d testThrustVectorDir(1.0, 0.0, 0.0);
+        bool ignoreRoll = false;
+        double rollSetpoint = 5.0; // deg
+        /* end of things for RCS tuning */
 
-        rcs.runRCS(dt, targetQuat, ignoreRoll, rollSetpoint);
+        rcs.runRCS(dt, testThrustVectorDir, ignoreRoll, rollSetpoint, EulerSetpoints, directAttitudeControl);
         rcs.updateMassFromRCS(dt);
 
+        bodyTorques = rcs.RCStorques;
         dynamics.update(dt, bodyForces, bodyTorques);
         spacecraft.updateMassProperties();
 
@@ -177,19 +176,19 @@ int main() {
         }
     if (dynamics.tippedOver || (dynamics.landed && (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)))){ 
             cout << "Spacecraft has crashed into the surface!" << endl;
-            cout << "Faliure due to:" << endl;
+            cout << "\nFaliure due to:" << endl;
             if (dynamics.tippedOver){
-                cout << "— Exceeded tip-over angle safety limit" << endl;
+                cout << "— Exceeding tip-over angle safety limit" << endl;
             }
             if (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)){
-                cout << "— Exceeded touchdown velocity limit" << endl;
+                cout << "— Exceeding touchdown velocity limit" << endl;
             }
         }else if (!dynamics.tippedOver && (dynamics.landed && (abs(dynamics.impactVelocity) < abs(spacecraft.touchdownVelocityLimit)))){
             cout << "Touchdown confirmed, safe on " << world.name << "!" << endl;
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time (s), posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS torque (roll),RCS torque (pitch),RCS torque (yaw)\n";    
+    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS torque (roll),RCS torque (pitch),RCS torque (yaw)\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -217,7 +216,7 @@ int main() {
                 << "\n";
     }
     outFile.close();
-    cout << "Total steps written: " << simData.size() << endl;
+    cout << "\nTotal steps written: " << simData.size() << endl;
  
     return 0;
 }
