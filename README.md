@@ -16,8 +16,8 @@ Simulating the autonomous landing of a spacecraft to meet trajectory and landing
 1) **[Completed]** Create flat world with 6dof dynamics
 2) **[Completed]** Develop visualization tool for graphing trajectory
 3) **[Completed]** Develop propulsion mechanics (mass depletion, descent rate controller)
-4) **[Completed]** Integrate controllers for TVC and RCS (full 6DoF control)
-5) [_In progress]_ Implement guidance algorithm for full control stack functionality
+4) **[Completed]** Design and implement controllers for TVC and RCS (full 6DoF control)
+5) [_In progress]_ Develop guidance algorithm for full control stack functionality
 6) Achieve controlled autonomous descent
 7) Add Monte-Carlo functionality
 
