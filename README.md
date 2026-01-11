@@ -27,6 +27,7 @@ Simulating the autonomous landing of a spacecraft to meet trajectory and landing
   - Transition from flat world physics to rotating sphere
 
 ## Resources Referenced  
+- Lunar Lander model obtained from NASA 3D Resources
 - Lunar Landing Trajectory Design for Onboard Hazard Detection & Avoidance by Steve Paschall, Tye Brady, Tom Fill Ron Sostaric 
   - Used for simulating Apollo landing trajectory in the sim
  - Apollo Lunar Decent and Ascent Trajectories: https://www.lpi.usra.edu/lunar/documents/Bennett_NASA-TM-X-58040.pdf

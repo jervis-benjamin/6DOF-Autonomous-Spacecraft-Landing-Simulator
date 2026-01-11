@@ -54,6 +54,17 @@ presets:
         x: time (s)
         y: quatZ
 
+  TVC_deflections:
+    description: "gimbal deflections for TVC"
+    plots:
+      - type: 2d
+        x: time (s)
+        y: TVC pitch deflection (deg)
+
+      - type: 2d
+        x: time (s)
+        y: TVC yaw deflection (deg)
+
   RCS_thruster_sets:
     description: "all thruster sets for 3 axis"
     plots:

@@ -8,6 +8,7 @@ TODOs:
 - make sure to have descriptions for all functions (be more diligent on best practices)
 - (low priority) make all class functions optimized for speed (similar to how it is in Dynamics.h)
 - once guidance and control stack is implemented, find ways to optimize for fuel
+- find faster way to log data into a csv
 - long term goal: implement monte-carlo ability and find ways to optimize sim for speed
 
 */
@@ -41,6 +42,10 @@ struct StateRecord {
     double throttleLevel;
     double thrustEngine;
     double propLevel;
+    double pitchDeflectionDeg;
+    double yawDeflectionDeg;
+    Eigen::Vector3d actualThrustVector;
+    Eigen::Vector3d TVCtorques;
     array<int, 3> RCS_thrusterSet;
     Eigen::Vector3d RCStorques;
 };
@@ -100,7 +105,21 @@ int main() {
         // run tvc
         // run rcs
 
-        /* for RCS tuning */
+        /* for TVC tuning
+        propulsion.thrustEngine = propulsion.getMaxThrust()*0.35;
+        double thrustMag = propulsion.thrustEngine;
+        propulsion.updateMassFromEngine(dt);
+
+        Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
+
+        tvc.runTVC(dt, thrustMag, testThrustVectorDir);
+
+        bodyForces = tvc.actualThrustVector;
+        bodyTorques = tvc.TVCtorques;
+        */
+
+        /*
+        // for RCS tuning
         // FOLLOWING PITCH-YAW-ROLL
         Eigen::Vector3d EulerSetpoints{5.0, 10.0, 3.0}; // pitch, yaw, roll
         bool directAttitudeControl = false;
@@ -108,12 +127,13 @@ int main() {
         Eigen::Vector3d testThrustVectorDir(0.5, 0.5, 0.707);
         bool ignoreRoll = false;
         double rollSetpoint = 5.0; // deg
-        /* end of things for RCS tuning */
+        // end of things for RCS tuning 
+        */
+        //rcs.runRCS(dt, testThrustVectorDir, ignoreRoll, rollSetpoint, EulerSetpoints, directAttitudeControl);
+        //rcs.updateMassFromRCS(dt);
+        //bodyTorques = rcs.RCStorques;
 
-        rcs.runRCS(dt, testThrustVectorDir, ignoreRoll, rollSetpoint, EulerSetpoints, directAttitudeControl);
-        rcs.updateMassFromRCS(dt);
 
-        bodyTorques = rcs.RCStorques;
         dynamics.update(dt, bodyForces, bodyTorques);
         spacecraft.updateMassProperties();
 
@@ -134,6 +154,10 @@ int main() {
         record.throttleLevel = propulsion.throttleLevel * 100.0;
         record.thrustEngine = propulsion.thrustEngine;
         record.propLevel = (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100;
+        record.pitchDeflectionDeg = tvc.pitchDeflectionRad * (180/PI);
+        record.yawDeflectionDeg = tvc.yawDeflectionRad * (180/PI);
+        record.actualThrustVector = tvc.actualThrustVector;
+        record.TVCtorques = tvc.TVCtorques;
         record.RCS_thrusterSet = rcs.RCS_thrusterSet;
         record.RCStorques = rcs.RCStorques;
 
@@ -163,7 +187,7 @@ int main() {
             cout << "\n\n=== CONTACT DETECTED ===" << endl;
             cout << "Time at contact: " << t - dynamics.landingTimer << " s" << endl;
             cout << "Final velocity: " << dynamics.impactVelocity << " m/s" << endl;
-            cout << "Remaining propellant mass: " << spacecraft.propellantMass << " kg" << endl; 
+            cout << "Remaining propellant mass: " << spacecraft.propellantMass << " kg (" << (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100 << " %)" << endl; 
         }
         
     }
@@ -172,7 +196,7 @@ int main() {
     if (!dynamics.landed){
             cout << "\n\n=== MAX TIME REACHED ===" << endl;
             cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
-            cout << "Remaining propellant: " << spacecraft.propellantMass / spacecraft.initialPropellantMass << "%" << endl;
+            cout << "Remaining propellant: " << (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100 << "%" << endl;
         }
     if (dynamics.tippedOver || (dynamics.landed && (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)))){ 
             cout << "Spacecraft has crashed into the surface!" << endl;
@@ -188,7 +212,7 @@ int main() {
         }
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS torque (roll),RCS torque (pitch),RCS torque (yaw)\n";    
+    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),TVC pitch deflection (deg),TVC yaw deflection (deg),Thrust in body X (N),Thrust in body Y (N),Thrust in body Z (N),TVC roll torque (N-m),TVC pitch torque (N-m),TVC yaw torque (N-m),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS roll torque (N-m),RCS pitch torque (N-m),RCS yaw torque (N-m)\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -209,10 +233,17 @@ int main() {
                 
                 << rec.throttleLevel << "," << rec.thrustEngine << "," << rec.propLevel << ","
 
+                << rec.pitchDeflectionDeg << "," << rec.yawDeflectionDeg << ","
+
+                << rec.actualThrustVector(0) << "," << rec.actualThrustVector(1) << "," << rec.actualThrustVector(2) << ","
+
+                << rec.TVCtorques(0) << "," << rec.TVCtorques(1) << "," << rec.TVCtorques(2) << ","
+
                 << rec.RCS_thrusterSet[0] << "," << rec.RCS_thrusterSet[1] << "," << rec.RCS_thrusterSet[2] << ","
                 
                 << rec.RCStorques(0) << "," << rec.RCStorques(1) << "," << rec.RCStorques(2)
                 
+
                 << "\n";
     }
     outFile.close();
