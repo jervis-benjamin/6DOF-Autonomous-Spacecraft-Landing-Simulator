@@ -12,10 +12,10 @@ Owns:
 
 #include <Eigen/Dense>
 #include <cmath>
-#include "QuaternionTools.h"
-#include "Dynamics.h"
-#include "Propulsion.h"
-#include "Spacecraft.h"
+#include "QuaternionTools.cpp"
+#include "Dynamics.cpp"
+#include "Propulsion.cpp"
+#include "Spacecraft.cpp"
 using namespace std;
 
 class TVC_Controller {

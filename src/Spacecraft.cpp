@@ -12,7 +12,7 @@ Owns:
 
 #include <Eigen/Dense>
 #include <cmath>
-#include "QuaternionTools.h"
+#include "QuaternionTools.cpp"
 using namespace std;
 
 class Spacecraft {

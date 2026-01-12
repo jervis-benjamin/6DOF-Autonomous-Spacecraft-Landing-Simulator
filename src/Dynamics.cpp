@@ -9,9 +9,9 @@ Owns:
 #pragma once
 
 #include <Eigen/Dense>
-#include "Spacecraft.h"
-#include "QuaternionTools.h"
-#include "World.h"
+#include "Spacecraft.cpp"
+#include "QuaternionTools.cpp"
+#include "World.cpp"
 using namespace std;
 
 class Dynamics {

@@ -11,9 +11,9 @@ Owns:
 
 #include <Eigen/Dense>
 #include <cmath>
-#include "Spacecraft.h"
-#include "Dynamics.h"
-#include "World.h"
+#include "Spacecraft.cpp"
+#include "Dynamics.cpp"
+#include "World.cpp"
 using namespace std;
 
 class Propulsion {

@@ -18,13 +18,13 @@ TODOs:
 #include <Eigen/Dense>
 #include <fstream>
 
-#include "Spacecraft.h"
-#include "Dynamics.h"
-#include "World.h"
+#include "Spacecraft.cpp"
+#include "Dynamics.cpp"
+#include "World.cpp"
 //#include "Guidance.h"
-#include "Propulsion.h"
-#include "TVC_Controller.h"
-#include "RCS_Controller.h"
+#include "Propulsion.cpp"
+#include "TVC_Controller.cpp"
+#include "RCS_Controller.cpp"
 
 using namespace std;
 
@@ -105,8 +105,8 @@ int main() {
         // run tvc
         // run rcs
 
-        /* for TVC tuning
-        propulsion.thrustEngine = propulsion.getMaxThrust()*0.35;
+        //for TVC tuning
+        propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
         double thrustMag = propulsion.thrustEngine;
         propulsion.updateMassFromEngine(dt);
 
@@ -116,7 +116,7 @@ int main() {
 
         bodyForces = tvc.actualThrustVector;
         bodyTorques = tvc.TVCtorques;
-        */
+        
 
         /*
         // for RCS tuning

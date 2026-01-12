@@ -13,8 +13,8 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include <array>
-#include "Dynamics.h"
-#include "Spacecraft.h"
+#include "Dynamics.cpp"
+#include "Spacecraft.cpp"
 
 using namespace std;
 
