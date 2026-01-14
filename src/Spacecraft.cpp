@@ -60,12 +60,12 @@ public:
         //initialPosition << 350000, -2000, 15000; // 350km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << -1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)
         
-        // starting values adjusted for flat moon
+        // starting values adjusted for flat moon, relative to target point
         //initialPosition << 200000, -2000, 15000; // 200km away from target with a 2km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
         //initialVelocity << -1700, -5, 0;
 
         initialPosition << 0.0, 0.0, 5000.0; // for testing
-        initialVelocity << 0.0, 0.0, 0.0; // for testing
+        initialVelocity << 10.0, 0.0, 0.0; // for testing
 
         initialAngularVelocity << 0.0, 0.0, 0.0; 
         

@@ -105,14 +105,19 @@ int main() {
         // run tvc
         // run rcs
 
-        //for TVC tuning
-        propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
-        double thrustMag = propulsion.thrustEngine;
+        // for propulsion-velocity tunning
+        Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, -2.0}; // m/s
+        propulsion.update(dt, testVelocitySetpoint);
         propulsion.updateMassFromEngine(dt);
+        double thrustMag = propulsion.thrustEngine;
+        
 
-        Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
+        // for TVC tuning
+        //propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
 
-        tvc.runTVC(dt, thrustMag, testThrustVectorDir);
+        //Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
+
+        tvc.runTVC(dt, thrustMag, propulsion.idealthrustDirection);
 
         bodyForces = tvc.actualThrustVector;
         bodyTorques = tvc.TVCtorques;

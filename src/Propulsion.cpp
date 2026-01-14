@@ -14,6 +14,7 @@ Owns:
 #include "Spacecraft.cpp"
 #include "Dynamics.cpp"
 #include "World.cpp"
+
 using namespace std;
 
 class Propulsion {
@@ -31,12 +32,12 @@ private:
     // DPS is able to throttle from 10-60% of max thrust
     const double upperThrottleable = 0.6;
     const double lowerThrottleable = 0.1;
-    bool inThrottleRegion = false; // once it hits this region, the DPS is unable to exceed 60% thrust
+    bool inThrottleRegion = true; // once it hits this region, the DPS is unable to exceed 60% thrust
 
     // PID constants for the velocity controller
-    Eigen::Vector3d Kp{1.0, 1.0, 1.0};
+    Eigen::Vector3d Kp{0.1, 0.1, 0.1};
     Eigen::Vector3d Ki{0.0001, 0.0001, 0.0001};
-    Eigen::Vector3d Kd{0.5, 0.5, 0.5};
+    Eigen::Vector3d Kd{0.60, 0.60, 0.60};
 
     Eigen::Vector3d integralError = Eigen::Vector3d::Zero();
     Eigen::Vector3d previousError = Eigen::Vector3d::Zero();
@@ -45,7 +46,7 @@ public:
 
     double throttleLevel = 0.0; // from 0-1
     double thrustEngine = maxThrust * throttleLevel; // N (actual thrust)
-    Eigen::Vector3d idealthrustDirection{1.0, 0.0, 0.0}; // in the body frame
+    Eigen::Vector3d idealthrustDirection{1.0, 0.0, 0.0}; // in the world frame
 
     Propulsion(Spacecraft& sc, const Dynamics& dn, const World& w) : spacecraft(sc), dynamics(dn), world(w){}
 
@@ -71,6 +72,8 @@ public:
 
         Eigen::Vector3d idealAccel = runVelocityController(dt, guidanceVelocity);
 
+        
+
         // since the controller outputs the net kinematic desired acceleration, we will need to seperately compute the acceration needed by the engine
         Eigen::Vector3d gravity{0.0, 0.0, -world.getGravitationalAccel(dynamics.position.z())};
         Eigen::Vector3d thrustAccel = idealAccel - gravity;
@@ -87,11 +90,7 @@ public:
             if (rawThrust > upperThrottleable*maxThrust){ // if we are in the throttleable region, we cannot exceed 60% thrust
                 thrustEngine = upperThrottleable*maxThrust;
             }else if (rawThrust < lowerThrottleable*maxThrust){ 
-                if (dynamics.landed){ // engine off when contact has been made
-                    thrustEngine = 0;
-                }else{
-                    thrustEngine = lowerThrottleable*maxThrust;
-                }
+                thrustEngine = lowerThrottleable*maxThrust;
             }else{
                 thrustEngine = rawThrust; // if PID output is achievable, actual thrust = thrust from PID 
             }
@@ -102,6 +101,11 @@ public:
         // check if there is still propellant left
         if(spacecraft.propellantMass <= 0.0){
             thrustEngine = 0.0;
+        }
+
+        // cut thrust if we landed
+        if (dynamics.landed){ // engine off when contact has been made
+            thrustEngine = 0;
         }
 
         // update throttleLevel

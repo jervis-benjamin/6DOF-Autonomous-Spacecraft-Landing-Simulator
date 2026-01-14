@@ -24,11 +24,12 @@ private:
 
     
     
+    
 
 public:
     
     double rollSetpointDeg = 0.0;
-    Eigen::Vector3d cmdThrustDir{0.0, 0.0, 0.0};
+    Eigen::Vector3d velocitySetpoints{0.0, 0.0, 0.0};
     
     Guidance(const Dynamics& dyn, const Spacecraft& sc): dynamics(dyn), spacecraft(sc){}
 
