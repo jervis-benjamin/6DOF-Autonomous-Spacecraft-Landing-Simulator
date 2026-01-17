@@ -32,7 +32,7 @@ private:
     // DPS is able to throttle from 10-60% of max thrust
     const double upperThrottleable = 0.6;
     const double lowerThrottleable = 0.1;
-    bool inThrottleRegion = true; // once it hits this region, the DPS is unable to exceed 60% thrust
+    bool inThrottleRegion = false; // once it hits this region, the DPS is unable to exceed 60% thrust
 
     // PID constants for the velocity controller
     Eigen::Vector3d Kp{0.1, 0.1, 0.1};

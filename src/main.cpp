@@ -106,21 +106,25 @@ int main() {
         // run rcs
 
         // for propulsion-velocity tunning
-        Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, -2.0}; // m/s
-        propulsion.update(dt, testVelocitySetpoint);
-        propulsion.updateMassFromEngine(dt);
-        double thrustMag = propulsion.thrustEngine;
+        // Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, -1.0}; // m/s
+        // if (dynamics.position.z() > 500){
+        //     Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, dynamics.velocity.z()}; // m/s
+        // }
+        
+        // propulsion.update(dt, testVelocitySetpoint);
+        // propulsion.updateMassFromEngine(dt);
+        // double thrustMag = propulsion.thrustEngine;
         
 
-        // for TVC tuning
-        //propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
+        // // for TVC tuning
+        // //propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
 
-        //Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
+        // //Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
 
-        tvc.runTVC(dt, thrustMag, propulsion.idealthrustDirection);
+        // tvc.runTVC(dt, thrustMag, propulsion.idealthrustDirection);
 
-        bodyForces = tvc.actualThrustVector;
-        bodyTorques = tvc.TVCtorques;
+        // bodyForces = tvc.actualThrustVector;
+        // bodyTorques = tvc.TVCtorques;
         
 
         /*
