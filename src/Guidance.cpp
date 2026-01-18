@@ -41,8 +41,8 @@ private:
     double lockOrientationAlt = 1000; // m (altitude at which vehicle will be oriented level with the ground)
 
     // horizontal breaking velocity
-    double breakingVelocity = -90.0; // m/s
-    double approachVelocity = -70.0; // m/s
+    double breakingVelocity = -94.3; // m/s
+    double approachVelocity = -74.3; // m/s
 
     // descent rates
     double breakingDescentRate = -60.0; // m/s
@@ -122,7 +122,7 @@ public:
             }
 
         } else if (currentAlt >= lockVeclocityAlt){ // APPROACH PHASE
-            
+            ignoreRoll = false;
 
             velocitySetpoints.z() = approachDescentRate;
 
@@ -140,13 +140,13 @@ public:
             }
 
         } else if (currentAlt >= lockOrientationAlt){ // VELOCITY LOCK OUT PHASE
-
+            ignoreRoll = false;
             velocitySetpoints.x() = 0.0;
             velocitySetpoints.y() = 0.0;
             velocitySetpoints.z() = lockVeclocityDescentRate;
 
         } else { // FINAL DESCENT PHASE
-
+            ignoreRoll = false;
             velocitySetpoints.x() = 0.0;
             velocitySetpoints.y() = 0.0;
             velocitySetpoints.z() = finalDescentRate;

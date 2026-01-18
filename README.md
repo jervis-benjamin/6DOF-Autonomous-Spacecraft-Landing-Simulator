@@ -17,9 +17,9 @@ Simulating the autonomous landing of a spacecraft to meet trajectory and landing
 2) **[Completed]** Develop visualization tool for graphing trajectory
 3) **[Completed]** Develop propulsion mechanics (mass depletion, mass properties)
 4) **[Completed]** Design and implement controllers for TVC and RCS (full 6DoF control)
-5) [_In progress]_ Develop guidance algorithm for full control stack functionality
-6) Achieve controlled autonomous landing
-7) Add Monte-Carlo functionality
+5) **[Completed]** Develop guidance algorithm for full control stack functionality
+6) **[Completed]** Achieve controlled autonomous landing
+7) [_In progress]_ Add Monte-Carlo functionality
 
 ### Tentative Additons:
   - Implement aerodynamics
