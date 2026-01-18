@@ -21,7 +21,7 @@ TODOs:
 #include "Spacecraft.cpp"
 #include "Dynamics.cpp"
 #include "World.cpp"
-//#include "Guidance.h"
+#include "Guidance.cpp"
 #include "Propulsion.cpp"
 #include "TVC_Controller.cpp"
 #include "RCS_Controller.cpp"
@@ -48,28 +48,27 @@ struct StateRecord {
     Eigen::Vector3d TVCtorques;
     array<int, 3> RCS_thrusterSet;
     Eigen::Vector3d RCStorques;
+    Eigen::Vector3d velocitySetpoints;
 };
 
 int main() {
     World world = World::Moon();
     Spacecraft spacecraft;
     Dynamics dynamics(spacecraft, world);
-    //Guidance guidance(spacecraft, dynamics, world);
+    Guidance guidance(spacecraft, dynamics, world);
     Propulsion propulsion(spacecraft, dynamics, world);
     TVC_Controller tvc(spacecraft, dynamics, propulsion);
     RCS_Controller rcs(spacecraft, dynamics);
 
     const double dt = 0.01; // s
-    const double tEnd = 600.0; // s
+    const double tEnd = 1200.0; // s
     double t = 0.0; // s
 
     vector<StateRecord> simData;
 
     /* Test Inputs */
-    /*
-    //Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
-    Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
-    */
+    // Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
+    // Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
 
     /* Body forces */
     Eigen::Vector3d bodyForces = Eigen::Vector3d::Zero();
@@ -80,7 +79,6 @@ int main() {
 
         /* Main Sim Loop Functions */
         /*
-        
         planned control/sim stack:
 
         - get guidance velocity information, roll setpoint (typically/always 0 deg)
@@ -100,53 +98,31 @@ int main() {
         bodyForces = Eigen::Vector3d::Zero();
         bodyTorques = Eigen::Vector3d::Zero();
 
-        // guidance
-        // update mass from prop
-        // run tvc
-        // run rcs
+        // update guidance
+        guidance.update();
+        // Eigen::Vector3d testSetpoints = dynamics.velocity;
+        // testSetpoints.z() = -50;
 
-        // for propulsion-velocity tunning
-        // Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, -1.0}; // m/s
-        // if (dynamics.position.z() > 500){
-        //     Eigen::Vector3d testVelocitySetpoint{0.0, 0.0, dynamics.velocity.z()}; // m/s
-        // }
-        
-        // propulsion.update(dt, testVelocitySetpoint);
-        // propulsion.updateMassFromEngine(dt);
-        // double thrustMag = propulsion.thrustEngine;
-        
+        // update propulsion and get command thrust vector
+        // propulsion.update(dt, testSetpoints);
+        propulsion.update(dt, guidance.velocitySetpoints);
+        propulsion.updateMassFromEngine(dt);
 
-        // // for TVC tuning
-        // //propulsion.thrustEngine = propulsion.getMaxThrust()*0.6;
+        // run TVC controller
+        tvc.runTVC(dt, propulsion.thrustEngine, propulsion.idealthrustDirection);
+        bodyForces += tvc.actualThrustVector;
+        bodyTorques += tvc.TVCtorques;
 
-        // //Eigen::Vector3d testThrustVectorDir{0.707, 0.0, 0.707};
+        // run RCS controller
+        rcs.runRCS(dt, propulsion.idealthrustDirection, guidance.ignoreRoll, guidance.rollSetpointDeg, guidance.eulerSetpointsDeg, guidance.maintainOrientation);
+        rcs.updateMassFromRCS(dt);
+        bodyTorques += rcs.RCStorques;
 
-        // tvc.runTVC(dt, thrustMag, propulsion.idealthrustDirection);
-
-        // bodyForces = tvc.actualThrustVector;
-        // bodyTorques = tvc.TVCtorques;
-        
-
-        /*
-        // for RCS tuning
-        // FOLLOWING PITCH-YAW-ROLL
-        Eigen::Vector3d EulerSetpoints{5.0, 10.0, 3.0}; // pitch, yaw, roll
-        bool directAttitudeControl = false;
-
-        Eigen::Vector3d testThrustVectorDir(0.5, 0.5, 0.707);
-        bool ignoreRoll = false;
-        double rollSetpoint = 5.0; // deg
-        // end of things for RCS tuning 
-        */
-        //rcs.runRCS(dt, testThrustVectorDir, ignoreRoll, rollSetpoint, EulerSetpoints, directAttitudeControl);
-        //rcs.updateMassFromRCS(dt);
-        //bodyTorques = rcs.RCStorques;
-
-
+        // update state with inputs
         dynamics.update(dt, bodyForces, bodyTorques);
+
+        // update spacecraft mass
         spacecraft.updateMassProperties();
-
-
 
         /* Recording Sim Data*/
         StateRecord record;
@@ -169,6 +145,7 @@ int main() {
         record.TVCtorques = tvc.TVCtorques;
         record.RCS_thrusterSet = rcs.RCS_thrusterSet;
         record.RCStorques = rcs.RCStorques;
+        record.velocitySetpoints = guidance.velocitySetpoints;
 
         simData.push_back(record);
 
@@ -203,25 +180,27 @@ int main() {
 
 
     if (!dynamics.landed){
-            cout << "\n\n=== MAX TIME REACHED ===" << endl;
-            cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
-            cout << "Remaining propellant: " << (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100 << "%" << endl;
-        }
+        cout << "\n\n=== MAX TIME REACHED ===" << endl;
+        cout << "Last altitude: " << dynamics.position.z() << " m" << endl;
+        cout << "Remaining propellant: " << (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100 << "%" << endl;
+    }
     if (dynamics.tippedOver || (dynamics.landed && (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)))){ 
-            cout << "Spacecraft has crashed into the surface!" << endl;
-            cout << "\nFaliure due to:" << endl;
-            if (dynamics.tippedOver){
-                cout << "— Exceeding tip-over angle safety limit" << endl;
-            }
-            if (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)){
-                cout << "— Exceeding touchdown velocity limit" << endl;
-            }
-        }else if (!dynamics.tippedOver && (dynamics.landed && (abs(dynamics.impactVelocity) < abs(spacecraft.touchdownVelocityLimit)))){
-            cout << "Touchdown confirmed, safe on " << world.name << "!" << endl;
+        cout << "Spacecraft has crashed into the surface!" << endl;
+        cout << "\nFaliure due to:" << endl;
+        if (dynamics.tippedOver){
+            cout << "— Exceeding tip-over angle safety limit" << endl;
         }
+        if (abs(dynamics.impactVelocity) > abs(spacecraft.touchdownVelocityLimit)){
+            cout << "— Exceeding touchdown velocity limit" << endl;
+        }
+    }else if (!dynamics.tippedOver && (dynamics.landed && (abs(dynamics.impactVelocity) < abs(spacecraft.touchdownVelocityLimit)))){
+        cout << "Touchdown confirmed, safe on " << world.name << "!" << endl;
+    }
+    cout << "\nLast position relative to target (m): " << dynamics.position.transpose() << endl;
+
     ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
     //ofstream outFile("simulation_data.csv");
-    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),TVC pitch deflection (deg),TVC yaw deflection (deg),Thrust in body X (N),Thrust in body Y (N),Thrust in body Z (N),TVC roll torque (N-m),TVC pitch torque (N-m),TVC yaw torque (N-m),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS roll torque (N-m),RCS pitch torque (N-m),RCS yaw torque (N-m)\n";    
+    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),TVC pitch deflection (deg),TVC yaw deflection (deg),Thrust in body X (N),Thrust in body Y (N),Thrust in body Z (N),TVC roll torque (N-m),TVC pitch torque (N-m),TVC yaw torque (N-m),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS roll torque (N-m),RCS pitch torque (N-m),RCS yaw torque (N-m),velX setpoint (m/s),velY setpoint (m/s),velZ setpoint (m/s)\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -250,8 +229,9 @@ int main() {
 
                 << rec.RCS_thrusterSet[0] << "," << rec.RCS_thrusterSet[1] << "," << rec.RCS_thrusterSet[2] << ","
                 
-                << rec.RCStorques(0) << "," << rec.RCStorques(1) << "," << rec.RCStorques(2)
+                << rec.RCStorques(0) << "," << rec.RCStorques(1) << "," << rec.RCStorques(2) << ","
                 
+                << rec.velocitySetpoints.x() << "," << rec.velocitySetpoints.y() << "," << rec.velocitySetpoints.z()
 
                 << "\n";
     }

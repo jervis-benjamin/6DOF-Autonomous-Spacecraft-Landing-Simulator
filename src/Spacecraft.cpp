@@ -57,12 +57,12 @@ public:
         updateInertia();
         
         // realistic apollo numbers
-        //initialPosition << 350000, -500, 15000; // 350km away from target with a 0.5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
+        //initialPosition << 350000, -500, 15000; // 350km away from target with a 0.5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a round world)
         //initialVelocity << -1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)
         
-        // starting values adjusted for flat moon, relative to target point
-        initialPosition << 200000, -500, 15000; // 200km away from target with a 0.5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
-        initialVelocity << -1700, -5, 0;
+        // starting values adjusted for flat moon with no orbital velocity, relative to target point
+        initialPosition << 35000, 50, 15000; // 2km away from target with a 5 m skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a flat world)
+        initialVelocity << -400, 5, -15; // post deorbit durn velocity roughly scaled for flat world physics
 
         // initialPosition << 0.0, 0.0, 1000.0; // for testing
         // initialVelocity << 0.0, 0.0, 0.0; // for testing
@@ -75,7 +75,7 @@ public:
 
         Eigen::Vector4d relativeOrientation(1.0, 0.0, 0.0, 0.0); // Start upright in the "relative" frame
         initialOrientation = QuaternionTools::toWorld(relativeOrientation);
-        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 0.0); // setting initial orientation
+        initialOrientation = QuaternionTools::rotateQuat(initialOrientation, 'y', 90.0); // setting initial orientation
     }
 
     /*
