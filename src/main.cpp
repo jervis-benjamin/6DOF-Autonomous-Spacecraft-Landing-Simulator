@@ -6,7 +6,6 @@
 
 TODOs:
 - add tvc and rcs stats to simvis3d and fix plume not showing up for some reason
-- find faster way to log data into a csv
 - add IMU class (on and off errors)
 - add monte carlo feature and look into what to disperse
 - graph 3 sigma landing elipse
@@ -155,9 +154,6 @@ int main() {
         rec.tvcTorques[1] = tvc.TVCtorques.y();
         rec.tvcTorques[2] = tvc.TVCtorques.z();
 
-        // rec.RCS_thrusterSet[0] = static_cast<double>(rcs.RCS_thrusterSet[0]);
-        // rec.RCS_thrusterSet[1] = static_cast<double>(rcs.RCS_thrusterSet[1]);
-        // rec.RCS_thrusterSet[2] = static_cast<double>(rcs.RCS_thrusterSet[2]);
         rec.RCS_thrusterSet[0] = static_cast<double>(rcs.RCS_thrusterSet[0]);
         rec.RCS_thrusterSet[1] = static_cast<double>(rcs.RCS_thrusterSet[1]);
         rec.RCS_thrusterSet[2] = static_cast<double>(rcs.RCS_thrusterSet[2]);
