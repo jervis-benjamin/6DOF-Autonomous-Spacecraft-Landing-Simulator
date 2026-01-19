@@ -5,10 +5,15 @@
 /*
 
 TODOs:
+- make the .h and .cpp split
+- add tvc and rcs stats to simvis3d
+- find faster way to log data into a csv
+- add IMU class (on and off errors)
+- add monte carlo feature and look into what to disperse
+- graph 3 sigma landing elipse
+
 - make sure to have descriptions for all functions (be more diligent on best practices)
 - (low priority) make all class functions optimized for speed (similar to how it is in Dynamics.h)
-- once guidance and control stack is implemented, find ways to optimize for fuel
-- find faster way to log data into a csv
 - long term goal: implement monte-carlo ability and find ways to optimize sim for speed
 
 */
@@ -18,13 +23,13 @@ TODOs:
 #include <Eigen/Dense>
 #include <fstream>
 
-#include "Spacecraft.cpp"
-#include "Dynamics.cpp"
-#include "World.cpp"
-#include "Guidance.cpp"
-#include "Propulsion.cpp"
-#include "TVC_Controller.cpp"
-#include "RCS_Controller.cpp"
+#include "../include/Spacecraft.h"
+#include "../include/Dynamics.h"
+#include "../include/World.h"
+#include "../include/Guidance.h"
+#include "../include/Propulsion.h"
+#include "../include/TVC_Controller.h"
+#include "../include/RCS_Controller.h"
 
 using namespace std;
 
@@ -49,6 +54,7 @@ struct StateRecord {
     array<int, 3> RCS_thrusterSet;
     Eigen::Vector3d RCStorques;
     Eigen::Vector3d velocitySetpoints;
+    double guidanceState;
 };
 
 int main() {
@@ -78,21 +84,6 @@ int main() {
     //while (t <= tEnd) { 
 
         /* Main Sim Loop Functions */
-        /*
-        planned control/sim stack:
-
-        - get guidance velocity information, roll setpoint (typically/always 0 deg)
-        - get thrust direction from propulsion using guidance velocity
-        - update propMass from engine
-        - run tvc 
-            - if thrust is low or tvc is at max gimbal, run rcs. else, tvc is the primary method
-            - tvc controller outputs deflections which get converted into a thrust and torque vector
-            - rcs controller outputs a torque vector
-        - run rcs for roll correction using roll setpoint from guidance
-        - update propMass from RCS
-        - sum the body forces and torques and apply them to update the state vector
-        - update mass properties
-        */
 
         // reset net forces and torques
         bodyForces = Eigen::Vector3d::Zero();
@@ -146,6 +137,7 @@ int main() {
         record.RCS_thrusterSet = rcs.RCS_thrusterSet;
         record.RCStorques = rcs.RCStorques;
         record.velocitySetpoints = guidance.velocitySetpoints;
+        record.guidanceState = guidance.guidanceState;
 
         simData.push_back(record);
 
@@ -198,9 +190,9 @@ int main() {
     }
     cout << "\nLast position relative to target (m): " << dynamics.position.transpose() << endl;
 
-    ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/src/SimVis_tools/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in src
+    ofstream outFile("C:/Users/jervi/Documents/projects/6dof Spacecraft Landing Simulator/visualization/simulation_data.csv"); // TODO: fix program such that csv is automatically generated in folder
     //ofstream outFile("simulation_data.csv");
-    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),TVC pitch deflection (deg),TVC yaw deflection (deg),Thrust in body X (N),Thrust in body Y (N),Thrust in body Z (N),TVC roll torque (N-m),TVC pitch torque (N-m),TVC yaw torque (N-m),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS roll torque (N-m),RCS pitch torque (N-m),RCS yaw torque (N-m),velX setpoint (m/s),velY setpoint (m/s),velZ setpoint (m/s)\n";    
+    outFile << "time (s),posX (m),posY (m),posZ (m),velX (m/s),velY (m/s),velZ (m/s),quatW,quatX,quatY,quatZ,omegX (rad/s),omegY (rad/s),omegZ (rad/s),pitch (deg),yaw (deg),roll (deg),totalMass (kg),propMass (kg),x_cg (m),Ixx (kg-m^2),Iyy (kg-m^2),Izz (kg-m^2),throttleLevel (%),thrustEngine (N),propLevel (%),TVC pitch deflection (deg),TVC yaw deflection (deg),Thrust in body X (N),Thrust in body Y (N),Thrust in body Z (N),TVC roll torque (N-m),TVC pitch torque (N-m),TVC yaw torque (N-m),RCS thrusters state (roll),RCS thrusters state (pitch),RCS thrusters state (yaw),RCS roll torque (N-m),RCS pitch torque (N-m),RCS yaw torque (N-m),velX setpoint (m/s),velY setpoint (m/s),velZ setpoint (m/s),guidanceState\n";    
     for (const auto& rec : simData) {
         outFile << rec.time << ","
                 << rec.position(0) << "," << rec.position(1) << "," << rec.position(2) << ","
@@ -231,7 +223,9 @@ int main() {
                 
                 << rec.RCStorques(0) << "," << rec.RCStorques(1) << "," << rec.RCStorques(2) << ","
                 
-                << rec.velocitySetpoints.x() << "," << rec.velocitySetpoints.y() << "," << rec.velocitySetpoints.z()
+                << rec.velocitySetpoints.x() << "," << rec.velocitySetpoints.y() << "," << rec.velocitySetpoints.z() << ","
+
+                << rec.guidanceState
 
                 << "\n";
     }
