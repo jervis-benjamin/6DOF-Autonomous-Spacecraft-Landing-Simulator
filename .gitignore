@@ -2,7 +2,10 @@
 *.json
 *.exe
 *.ipynb
+*.bin
+*.parquet
 scratchpad.txt
 .vscode/
 experimental/
 docs/
+0_misc/
