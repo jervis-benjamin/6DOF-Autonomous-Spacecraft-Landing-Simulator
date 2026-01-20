@@ -5,6 +5,7 @@
 *.bin
 *.parquet
 scratchpad.txt
+backup_data/
 .vscode/
 experimental/
 docs/

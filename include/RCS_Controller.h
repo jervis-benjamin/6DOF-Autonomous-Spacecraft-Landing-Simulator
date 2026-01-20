@@ -31,7 +31,7 @@ private:
     Eigen::Vector3d Kd{6000.0, 10000.0, 10000.0};
     Eigen::Vector3d integralError = Eigen::Vector3d::Zero();
     double iLimit = 0.5; // integral term anti-windup limit
-    double deadband = 0.001; // ~0.05 degrees
+    double deadband = 0.07 * (PI/180); //0.001; // ~0.05 degrees
 
     // Marquardt R‑4D thruster specs
     const double nomThrust = 490.0; // N
