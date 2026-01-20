@@ -1,4 +1,4 @@
-# SimVisGraph
+# SimVisGraph.py
 # Used for plotting sim data off of csv
 
 import pandas as pd

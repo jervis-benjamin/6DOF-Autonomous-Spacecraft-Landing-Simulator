@@ -61,7 +61,7 @@ void TVC_Controller::runTVC(double dt, double thrustMag, Eigen::Vector3d idealTh
 
     
     // normalize control effort by thrust
-    if ((thrustMag > (propulsion.getMaxThrust()*0.3)) && !dynamics.landed){ // only if TVC still has controll authority and we arent on the ground yet (TVC more unreliable below 30% max thrust)
+    if ((propulsion.throttleLevel > TVC_authorityThrust) && !dynamics.landed){ // only if TVC still has controll authority and we arent on the ground yet (TVC more unreliable below 30% max thrust)
         pitchDeflectionRad = -pitchTorqueCmd / (thrustMag * spacecraft.cg.x()); // positive deflection -> negative torque
         yawDeflectionRad = -yawTorqueCmd / (thrustMag * spacecraft.cg.x());
     }else{

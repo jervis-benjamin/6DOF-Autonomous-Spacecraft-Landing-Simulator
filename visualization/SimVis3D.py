@@ -1,4 +1,4 @@
-# SimVis3d
+# SimVis3d.py
 # 3D orientation and translation visualization of trajectory
 # *Lunar Lander model from NASA
 # **General architecture and certain VisPy functions suggested by Claude as learning animations is not a main objective of this project
@@ -67,6 +67,9 @@ euler_ang = df[["pitch (deg)", "yaw (deg)", "roll (deg)"]].values
 throttle = df["throttleLevel (%)"].values / 100
 prop = df["propLevel (%)"].values
 
+tvc_deflec = df[["TVC pitch deflection (deg)", "TVC yaw deflection (deg)"]].values
+rcs_tor = df[["RCS roll torque (N-m)", "RCS pitch torque (N-m)", "RCS yaw torque (N-m)"]].values
+
 times = df["time (s)"].values
 
 mesh = trimesh.load("lunar_lander.stl")
@@ -80,6 +83,7 @@ spacecraft_calibrate_rot = (
     trimesh.transformations.rotation_matrix(np.radians(90), [0, 0, 1])
 )
 mesh.apply_transform(spacecraft_calibrate_rot)
+
 
 axes_calibrate_rot = (
     trimesh.transformations.rotation_matrix(np.radians(0), [1, 0, 0]) @
@@ -141,15 +145,18 @@ starfield.visible = False
 starfield_transform = MatrixTransform()
 starfield.transform = starfield_transform
 
+
 spacecraft = scene.visuals.Mesh(
     vertices=mesh.vertices,
     faces=mesh.faces,
-    color=(0.7, 0.7, 0.9, 1.0),
+    #color=(0.7, 0.7, 0.9, 1.0),
+    color=(0.95, 0.95, 1.0, 1.0),
     shading='smooth',
     parent=view.scene
 )
 spacecraft_transform = MatrixTransform()
 spacecraft.transform = spacecraft_transform
+spacecraft.shading_filter.light_dir = (-1, 0, -1) # change lighting since it was initially aimed at the rear of the vehicle
 
 # thrust plume
 plume_vertices, plume_faces = create_cone_geometry(length=0.6, base_radius=0.16)
@@ -208,23 +215,44 @@ throttle_text.anchors = ('left', 'top')
 prop_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=9, face='Tahoma')
 prop_text.anchors = ('left', 'top')
 
+tvcTitle_text = Text('', parent=canvas.scene, color=hex_to_rgb("#90d7f6f7"), bold=True, font_size=9, face='Tahoma')
+tvcTitle_text.anchors = ('left', 'top')
+tvcPitch_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+tvcPitch_text.anchors = ('left', 'top')
+tvcYaw_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+tvcYaw_text.anchors = ('left', 'top')
 
-pos_text = Text('', parent=canvas.scene, color='yellow', bold=True, font_size=7, face='Tahoma')
+rcsTitle_text = Text('', parent=canvas.scene, color=hex_to_rgb("#90d7f6f7"), bold=True, font_size=9, face='Tahoma')
+rcsTitle_text.anchors = ('left', 'top')
+rcsTorY = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+rcsTorY.anchors = ('left', 'top')
+rcsTorZ = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+rcsTorZ.anchors = ('left', 'top')
+rcsTorX = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+rcsTorX.anchors = ('left', 'top')
+
+pos_text = Text('', parent=canvas.scene, color='yellow', bold=True, font_size=7.5, face='Tahoma')
 pos_text.anchors = ('right', 'top')
 
-vel_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
+vel_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7.5, face='Tahoma')
 vel_text.anchors = ('right', 'top')
 
-quat_text = Text('', parent=canvas.scene, color='white', bold=True, font_size=7, face='Tahoma')
-quat_text.anchors = ('right', 'top')
+quat_w = Text('', parent=canvas.scene, color='white', bold=True, font_size=7.5, face='Tahoma')
+quat_w.anchors = ('right', 'top')
+quat_x = Text('', parent=canvas.scene, color='white', bold=True, font_size=7.5, face='Tahoma')
+quat_x.anchors = ('right', 'top')
+quat_y = Text('', parent=canvas.scene, color='white', bold=True, font_size=7.5, face='Tahoma')
+quat_y.anchors = ('right', 'top')
+quat_z = Text('', parent=canvas.scene, color='white', bold=True, font_size=7.5, face='Tahoma')
+quat_z.anchors = ('right', 'top')
 
-pitch_text = Text('', parent=canvas.scene, color=hex_to_rgb("#48fe57"), bold=True, font_size=7, face='Tahoma')
+
+pitch_text = Text('', parent=canvas.scene, color=hex_to_rgb("#48fe57"), bold=True, font_size=7.5, face='Tahoma')
 pitch_text.anchors = ('right', 'top')
-yaw_text = Text('', parent=canvas.scene, color=hex_to_rgb("#37c3fa"), bold=True, font_size=7, face='Tahoma')
+yaw_text = Text('', parent=canvas.scene, color=hex_to_rgb("#37c3fa"), bold=True, font_size=7.5, face='Tahoma')
 yaw_text.anchors = ('right', 'top')
-roll_text = Text('', parent=canvas.scene, color=hex_to_rgb("#ff5160"), bold=True, font_size=7, face='Tahoma')
+roll_text = Text('', parent=canvas.scene, color=hex_to_rgb("#ff5160"), bold=True, font_size=7.5, face='Tahoma')
 roll_text.anchors = ('right', 'top')
-
 
 x_axis_text = Text('body x', parent=canvas.scene, color='red', bold=True, font_size=10, face='Tahoma')
 y_axis_text = Text('body y', parent=canvas.scene, color='green', bold=True, font_size=10, face='Tahoma')
@@ -238,13 +266,25 @@ def update_text_positions():
     prop_text.pos = 10, 125
     throttle_text.pos = 10, 160
 
-    pos_text.pos = w - 20, 35
-    vel_text.pos = w - 20, 60
-    quat_text.pos = w - 20, 85
-    pitch_text.pos = w - 20, 110
-    yaw_text.pos = w - 20, 135
-    roll_text.pos = w - 20, 160
+    tvcTitle_text.pos = 10, 200
+    tvcPitch_text.pos = 10, 225
+    tvcYaw_text.pos = 10, 250
+
+    rcsTitle_text.pos = 10, 290
+    rcsTorY.pos = 10, 315
+    rcsTorZ.pos = 10, 340
+    rcsTorX.pos = 10, 365
     
+    pos_text.pos = w - 20, 35
+    vel_text.pos = w - 20, 65
+    quat_w.pos = w - 20, 100
+    quat_x.pos = w - 20, 130
+    quat_y.pos = w - 20, 160
+    quat_z.pos = w - 20, 190
+    pitch_text.pos = w - 20, 225
+    yaw_text.pos = w - 20, 255
+    roll_text.pos = w - 20, 285
+
     x_axis_text.pos = w - 60, h - 100
     y_axis_text.pos = w - 60, h - 60
     z_axis_text.pos = w - 60, h - 20
@@ -314,6 +354,8 @@ def update(ev):
     v = vel[i]
     thr = throttle[i]
     prp = prop[i]
+    tvc = tvc_deflec[i]
+    rcs = rcs_tor[i]
 
     rot = R.from_quat([q[1], q[2], q[3], -q[0]]).as_matrix()
     spacecraft_pos = p / POSITION_SCALE
@@ -388,11 +430,27 @@ def update(ev):
 
     alt_text.text = f"Alt: {p[2]:.2f} m"
     time_text.text = f"Time: {times[i]:.2f} s"
-    pos_text.text = f"pos(x y z): [{p[0]:.2f}, {p[1]:.2f}, {p[2]:.2f}] m"
-    vel_text.text = f"vel(x y z): [{v[0]:.2f}, {v[1]:.2f}, {v[2]:.2f}] m/s"
+
     prop_text.text = f"Fuel tank: {prp:.2f} %"
     throttle_text.text = f"Thrust: {(thr*100):.2f} %"
-    quat_text.text = f"quat(w x y z): [{q[0]:.3f}, {q[1]:.3f}, {q[2]:.3f}, {q[3]:.3f}]"
+
+    tvcTitle_text.text = "TVC deflections:"
+    tvcPitch_text.text = f"pitch gimbal: {tvc[0]:.3f}°"
+    tvcYaw_text.text = f"yaw gimbal: {tvc[1]:.3f}°"
+
+    rcsTitle_text.text = "RCS torques:"
+    rcsTorY.text = f"pitch: {rcs[1]:.2f} N-m"
+    rcsTorZ.text = f"yaw: {rcs[2]:.2f} N-m"
+    rcsTorX.text = f"roll: {rcs[0]:.2f} N-m"
+
+    pos_text.text = f"pos(x y z): [{p[0]:.2f}, {p[1]:.2f}, {p[2]:.2f}] m"
+    vel_text.text = f"vel(x y z): [{v[0]:.2f}, {v[1]:.2f}, {v[2]:.2f}] m/s"
+
+    quat_w.text = f"quat_w: {q[0]:.4f}"
+    quat_x.text = f"quat_x: {q[1]:.4f}"
+    quat_y.text = f"quat_y: {q[2]:.4f}"
+    quat_z.text = f"quat_z: {q[3]:.4f}"
+
     pitch_text.text = f"pitch: {eul[0]:.2f}°"   
     yaw_text.text = f"yaw: {eul[1]:.2f}°"       
     roll_text.text = f"roll: {eul[2]:.2f}°"

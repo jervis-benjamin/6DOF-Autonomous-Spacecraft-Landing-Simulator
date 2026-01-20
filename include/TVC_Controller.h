@@ -66,6 +66,8 @@ public:
 
     Eigen::Vector3d actualThrustVector{0.0, 0.0, 0.0}; // N
     Eigen::Vector3d TVCtorques{0.0, 0.0, 0.0}; // N-m
+
+    double TVC_authorityThrust = 0.3; // % (minimum thrust% at which TVC still has reasonable authority)
     
     TVC_Controller(const Spacecraft& sc, const Dynamics& dn, const Propulsion& pr);
 

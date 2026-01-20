@@ -58,7 +58,6 @@ int main() {
 
     cout << "Run started...\n" << endl;
 
-
     /* Test Inputs */
     // Eigen::Vector3d testForce(47000.0, 0.0, 0.0); // in the body frame
     // Eigen::Vector3d testTorque(0.0, 0.0, 0.0); // in the body frame
@@ -77,7 +76,7 @@ int main() {
         bodyTorques = Eigen::Vector3d::Zero();
 
         // update guidance
-        guidance.update();
+        guidance.update(dt);
 
         // update propulsion and get command thrust vector
         propulsion.update(dt, guidance.velocitySetpoints);
@@ -139,12 +138,12 @@ int main() {
         rec.inertia[1] = spacecraft.inertia(1,1);
         rec.inertia[2] = spacecraft.inertia(2,2);
 
-        rec.throttleLevel = propulsion.throttleLevel;
+        rec.throttleLevel = propulsion.throttleLevel * 100; // %
         rec.thrustEngine = propulsion.thrustEngine;
-        rec.propLevel = (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100;
+        rec.propLevel = (spacecraft.propellantMass / spacecraft.initialPropellantMass) * 100; // %
 
-        rec.pitchDeflectionDeg = tvc.pitchDeflectionRad;
-        rec.yawDeflectionDeg = tvc.yawDeflectionRad;
+        rec.pitchDeflectionDeg = tvc.pitchDeflectionRad * (180/PI);
+        rec.yawDeflectionDeg = tvc.yawDeflectionRad * (180/PI);
 
         rec.actualThrustVec[0] = tvc.actualThrustVector.x();
         rec.actualThrustVec[1] = tvc.actualThrustVector.y();
@@ -154,9 +153,9 @@ int main() {
         rec.tvcTorques[1] = tvc.TVCtorques.y();
         rec.tvcTorques[2] = tvc.TVCtorques.z();
 
-        rec.RCS_thrusterSet[0] = static_cast<double>(rcs.RCS_thrusterSet[0]);
-        rec.RCS_thrusterSet[1] = static_cast<double>(rcs.RCS_thrusterSet[1]);
-        rec.RCS_thrusterSet[2] = static_cast<double>(rcs.RCS_thrusterSet[2]);
+        rec.RCS_thrusterSet[0] = rcs.RCS_thrusterSet[0];
+        rec.RCS_thrusterSet[1] = rcs.RCS_thrusterSet[1];
+        rec.RCS_thrusterSet[2] = rcs.RCS_thrusterSet[2];
 
         rec.RCStorques[0] = rcs.RCStorques.x();
         rec.RCStorques[1] = rcs.RCStorques.y();
@@ -216,7 +215,7 @@ int main() {
     // communicate possible errors to terminal
     int result = system(command.c_str());
     if (result == 0) {
-        cout << "simulation_data.bin.parquet created successfully." << endl;
+        cout << "simulation_data.parquet created successfully." << endl;
     } else {
         cout << "ERROR: Python script failed. Return code: " << result << endl;
     }

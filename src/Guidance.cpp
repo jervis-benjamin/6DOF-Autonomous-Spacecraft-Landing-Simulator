@@ -18,15 +18,29 @@ later on, it would be key to implement guidance that works for a large range of 
 #include "../include/Spacecraft.h"
 #include "../include/QuaternionTools.h"
 #include "../include/World.h"
+
 using namespace std;
 
 Guidance::Guidance(Spacecraft& sc, const Dynamics& dn, const World& w) : spacecraft(sc), dynamics(dn), world(w){}
 
-double Guidance::correctiveVelocity(double position, double target, double currVelocity){
+double Guidance::X_correctiveVelocity(double dt, double position, double target, double currVelocity){
     // returns a command velocity to correct current position based on a simple function
     double error = target - position;
+    xError += error * dt;
+    xError = clamp(xError, -30.0, 30.0);
 
-    double cmdVelocity = Kp * error - Kd * currVelocity; 
+    double cmdVelocity = (Kp * error) + (xKi * xError) - (Kd * currVelocity); 
+
+    return cmdVelocity;
+}
+
+double Guidance::Y_correctiveVelocity(double dt, double position, double target, double currVelocity){
+    // returns a command velocity to correct current position based on a simple function
+    double error = target - position;
+    yError += error * dt;
+    yError = clamp(yError, -30.0, 30.0);
+
+    double cmdVelocity = (Kp * error) + (yKi * yError) - (Kd * currVelocity); 
 
     return cmdVelocity;
 }
@@ -39,7 +53,7 @@ double Guidance::getHorizontalDistance(){
 }
 
 
-void Guidance::update(){
+void Guidance::update(double dt){
     // reset all guidance values to default
     velocitySetpoints = dynamics.velocity;
     ignoreRoll = true;
@@ -61,13 +75,13 @@ void Guidance::update(){
             velocitySetpoints.z() = breakingDescentRate;
         }
 
-        velocitySetpoints.y() = correctiveVelocity(currentCrossRange, landingTarget.y(), dynamics.velocity.y());
+        velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
 
         if (distToTarget >= stopBreakingBurn){
             velocitySetpoints.x() = breakingVelocity;
         } else{
             guidanceState = 1.5;
-            velocitySetpoints.x() = correctiveVelocity(currentRange, landingTarget.x(), dynamics.velocity.x());
+            velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
     } else if (currentAlt >= lockVeclocityAlt){ // APPROACH PHASE
@@ -77,13 +91,13 @@ void Guidance::update(){
 
         velocitySetpoints.z() = approachDescentRate;
 
-        velocitySetpoints.y() = correctiveVelocity(currentCrossRange, landingTarget.y(), dynamics.velocity.y());
+        velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
 
         if (distToTarget >= stopBreakingBurn){
             velocitySetpoints.x() = approachVelocity;
         } else{
             guidanceState = 2.5;
-            velocitySetpoints.x() = correctiveVelocity(currentRange, landingTarget.x(), dynamics.velocity.x());
+            velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
     } else if (currentAlt >= lockOrientationAlt){ // VELOCITY LOCK OUT PHASE

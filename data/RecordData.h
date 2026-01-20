@@ -1,3 +1,10 @@
+/*
+~ RecordData.h ~
+
+Owns: 
+- Simulation_data.bin formatting
+*/
+
 #pragma once
 
 #pragma pack(push, 1) // no binary padding

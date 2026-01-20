@@ -15,11 +15,13 @@
 #include "../include/RCS_Controller.h"
 #include "../include/Dynamics.h"
 #include "../include/Spacecraft.h"
+#include "../include/Propulsion.h"
+#include "../include/TVC_Controller.h"
 
 using namespace std;
 
 
-RCS_Controller::RCS_Controller(Spacecraft& sc, const Dynamics& dn) : spacecraft(sc), dynamics(dn) {
+RCS_Controller::RCS_Controller(Spacecraft& sc, const Dynamics& dn) : spacecraft(sc), dynamics(dn){
     leverArm = spacecraft.vehWidth / 2.0;
     torqueMag = leverArm * nomThrust * 2; // multipy by 2 since there are 2 thrusters that fire per axis (torque from a single thruster set)
 }
@@ -175,7 +177,6 @@ void RCS_Controller::runRCS(double dt, Eigen::Vector3d idealThrustDirWorld, bool
             RCS_thrusterSet[i] = 0;
         }
     }
-    
 }
 
 void RCS_Controller::updateMassFromRCS(double dt){
