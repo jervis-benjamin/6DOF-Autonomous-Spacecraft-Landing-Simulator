@@ -17,17 +17,10 @@ Owns:
 using namespace std;
 
 Spacecraft::Spacecraft() {
-    propellantMass = 8200.0; // kg (roughly the descent stage prop mass of the lunar module)
-    initialPropellantMass = 8200.0;
-    initialPropellantMass = propellantMass; 
-    totalMass = dryMass + propellantMass;
 
-    cg = Eigen::Vector3d::Zero();
-    updateCG();
-    
-    inertia = Eigen::Matrix3d::Zero();
-    updateInertia();
-    
+    initialPropellantMass = propellantMass;
+    updateMassProperties();
+
     // realistic apollo numbers
     //initialPosition << 350000, -500, 15000; // 350km away from target with a 0.5km skew, comming in at 15km of alt (scaled roughly Apollo landing trajectory in a round world)
     //initialVelocity << -1700, -5, 0; // approximately 1700 m/s horizontal velocity (with a small lateral drift) and close to 0 horizontal velocity (rougly conditions close to the begining of powered decent during Apollo)

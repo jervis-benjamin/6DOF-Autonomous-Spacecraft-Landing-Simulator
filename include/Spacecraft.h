@@ -19,11 +19,14 @@ using namespace std;
 
 class Spacecraft {
 public:
+
+    Spacecraft();
+
     // mass
     const double dryMass = 7000.0; // kg (roughly the mass dry mass + ascent stage prop mass of lunar module)
-    double propellantMass; // kg
-    double initialPropellantMass; // kg
-    double totalMass; // kg
+    double propellantMass = 8200.0; // kg
+    double initialPropellantMass = propellantMass; // kg
+    double totalMass = dryMass + propellantMass; // kg
 
     // geometry
     const double vehWidth = 4.2; // m (width of vehicle, roughly the width of the lunar module with its legs undeployed)
@@ -32,21 +35,17 @@ public:
     const double tankHeight = 3.2; // m (height of tank, roughly the height of the descent stage)
 
     // mass-geometry
-    Eigen::Vector3d cg; // m (distance to cg from bottom of the vehicle in the body frame)
-    Eigen::Matrix3d inertia; // kg*m^2 (about the center of mass)
+    Eigen::Vector3d cg = Eigen::Vector3d::Zero(); // m (distance to cg from bottom of the vehicle in the body frame)
+    Eigen::Matrix3d inertia = Eigen::Matrix3d::Zero(); // kg*m^2 (about the center of mass)
 
     // other specs
     double touchdownVelocityLimit = 1.5; // m/s (magnitude of the max touchdown velocity tolerance of the lander)
 
-
-    // initial conditions
+    // default initial conditions
     Eigen::Vector3d initialPosition; // m
     Eigen::Vector3d initialVelocity; // m/s
     Eigen::Vector4d initialOrientation; // w, x, y, z (quaternion)
     Eigen::Vector3d initialAngularVelocity; // rad/s
-
-    
-    Spacecraft();
 
     /*
     Center of gravity and moment of inertia equations were derived by simplfying the vehicle as two cylinders.

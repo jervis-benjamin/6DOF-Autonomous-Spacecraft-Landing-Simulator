@@ -48,7 +48,7 @@ private:
 public:
 
     double throttleLevel = 0.0; // from 0-1
-    double thrustEngine = maxThrust * throttleLevel; // N (actual thrust)
+    double thrustEngine = 0.0; // N (actual thrust)
     Eigen::Vector3d idealthrustDirection{1.0, 0.0, 0.0}; // in the world frame
 
     Propulsion(Spacecraft& sc, const Dynamics& dn, const World& w);

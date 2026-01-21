@@ -14,8 +14,8 @@ root.title("SimVisGraph")
 root.geometry("250x700")
 
 # csv config settings
-# simData = pd.read_csv("simulation_data.csv")
-simData = pd.read_parquet("../data/simulation_data.parquet")
+# simData = pd.read_parquet("../data/simulation_data.parquet")
+simData = pd.read_parquet("../data/monte_carlo/mc_run_2.parquet")
 columns = list(simData.columns)
 
 # ensure that the preset file has been formatted properly to avoid crashes

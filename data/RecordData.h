@@ -46,6 +46,8 @@ struct RecordData {
     double velocitySetpoints[3]; // [cols: velX setpoint (m/s), velY setpoint (m/s), VelZ setpoint (m/s)]
     double guidanceState; // [cols: guidanceState]
 
+    // Monte Carlo variables (undispersed values are just default)
+
 };
 
 #pragma pack(pop)
