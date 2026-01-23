@@ -5,13 +5,11 @@
 /*
 
 TODOs:
-- add monte carlo feature and look into what to disperse
 - graph 3 sigma landing elipse
 - add IMU class (on and off errors) and add TVC and RCS errors
 
 - make sure to have descriptions for all functions (be more diligent on best practices)
 - (low priority) make all class functions optimized for speed (similar to how it is in Dynamics.h)
-- long term goal: implement monte-carlo ability and find ways to optimize sim for speed
 
 */
 
@@ -143,6 +141,14 @@ int main() {
         TVC_Controller tvc(spacecraft, dynamics, propulsion);
         RCS_Controller rcs(spacecraft, dynamics);
 
+        // initialize input variables (Monte Carlo dispersed values)
+        double mc_initialPropMass = spacecraft.initialPropellantMass;
+        double mc_initialPosX = spacecraft.initialPosition.x();
+        double mc_initialPosY = spacecraft.initialPosition.y();
+        double mc_initialPosZ = spacecraft.initialPosition.z();
+
+
+
 
 
         /* 
@@ -256,6 +262,12 @@ int main() {
             rec.velocitySetpoints[2] = guidance.velocitySetpoints.z();
 
             rec.guidanceState = guidance.guidanceState;
+
+            rec.mc_initialPropMass = mc_initialPropMass;
+
+            rec.mc_initialPos[0] = mc_initialPosX;
+            rec.mc_initialPos[1] = mc_initialPosY;
+            rec.mc_initialPos[2] = mc_initialPosZ;
 
             /*
             maybe add initial dispersed value as more columns

@@ -47,6 +47,8 @@ struct RecordData {
     double guidanceState; // [cols: guidanceState]
 
     // Monte Carlo variables (undispersed values are just default)
+    double mc_initialPropMass; // [cols: mc_initialPropMass (kg)]
+    double mc_initialPos[3]; // [cols: mc_initialPosX (m), mc_initialPosY (m), mc_initialPosZ (m)]
 
 };
 

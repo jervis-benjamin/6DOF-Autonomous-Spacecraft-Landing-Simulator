@@ -7,16 +7,59 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 
 import yaml
+import os
+from tkinter import filedialog, messagebox
 
 # window config settings
 root = tk.Tk()
 root.title("SimVisGraph")
-root.geometry("250x700")
+root.geometry("250x760")
 
-# csv config settings
-# simData = pd.read_parquet("../data/simulation_data.parquet")
-simData = pd.read_parquet("../data/monte_carlo/mc_run_2.parquet")
-columns = list(simData.columns)
+simData = None
+columns = []
+presets = {}
+
+def load_data():
+    global simData, columns, presets
+    
+    file_path = filedialog.askopenfilename(
+        title="Select Simulation Data",
+        filetypes=[("Parquet Files", "*.parquet"), ("All Files", "*.*")]
+    )
+    
+    if not file_path:
+        return
+
+    try:
+        # load data
+        simData = pd.read_parquet(file_path)
+        columns = list(simData.columns)
+        
+        update_dropdowns()
+        
+        filename = os.path.basename(file_path)
+        status_label.config(text=f"Loaded: {filename}", fg="green")
+        
+        btn_2d.config(state=tk.NORMAL)
+        
+        load_presets()
+        
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load file:\n{str(e)}")
+        status_label.config(text="Error loading file", fg="red")
+
+def update_dropdowns():
+    combos = [combo_x, combo_y, combo_multi_x, combo_multi_y]
+    for c in combos:
+        c['values'] = columns
+        if columns:
+            c.current(0)
+            
+    combo_z['values'] = ["None"] + columns
+    combo_z.current(0)
+  
+    added_y_listbox.delete(0, tk.END)
+    update_multiplot_button()
 
 # ensure that the preset file has been formatted properly to avoid crashes
 def validate_presets(presets: dict, columns: list[str]):
@@ -61,11 +104,27 @@ def validate_presets(presets: dict, columns: list[str]):
     return valid_presets
 
 # load preset file
-with open("presets.yaml", "r") as f:
-    raw_presets = yaml.safe_load(f)["presets"]
+def load_presets():
+    global presets
+    if not os.path.exists("presets.yaml"):
+        return
 
-presets = validate_presets(raw_presets, columns)
-preset_names = list(presets.keys())
+    try:
+        with open("presets.yaml", "r") as f:
+            raw = yaml.safe_load(f)
+            if raw and "presets" in raw:
+                presets = validate_presets(raw["presets"], columns)
+                
+                preset_names = list(presets.keys())
+                if preset_names:
+                    combo_preset['values'] = preset_names
+                    combo_preset.current(0)
+                    btn_preset.config(state=tk.NORMAL)
+                else:
+                    combo_preset['values'] = ["No valid presets"]
+                    btn_preset.config(state=tk.DISABLED)
+    except Exception as e:
+        print(f"Preset load error: {e}")
 
 # general plotting functions for preset and manual plotting
 def plot_2d(x_col, y_col, title=None):
@@ -145,73 +204,93 @@ def run_preset(preset_name):
         else:
             plot_3d(plot["x"], plot["y"], plot["z"], plot.get("title"))
 
-# manual plotting functions
-def make_2d_plot():
-    plot_2d(x_var.get(), y_var.get())
-def make_3d_plot():
-    plot_3d(x_var.get(), y_var.get(), z_var.get())
-def update_3d_button(*args):
-    plot3d_button.config(state=tk.NORMAL if z_var.get() != "None" else tk.DISABLED)
 
+# file selection
+file_frame = tk.Frame(root, pady=10)
+file_frame.pack(fill=tk.X)
+tk.Button(file_frame, text="Load Parquet File", command=load_data, bg="#e1e1e1").pack()
+status_label = tk.Label(file_frame, text="No file loaded", font=("Arial", 8), fg="gray")
+status_label.pack()
 
-# x-axis dropdown menu
-tk.Label(root, text="X Axis").pack(pady=(10, 0))
-x_var = tk.StringVar(value=columns[0])
-ttk.Combobox(root, textvariable=x_var, values=columns, state="readonly").pack()
+ttk.Separator(root, orient="horizontal").pack(fill="x", pady=5)
 
-# y-axis dropdown menu
-tk.Label(root, text="Y Axis").pack(pady=(10, 0))
-y_var = tk.StringVar(value=columns[1] if len(columns) > 1 else columns[0])
-ttk.Combobox(root, textvariable=y_var, values=columns, state="readonly").pack()
+tk.Label(root, text="X Axis").pack(pady=(5, 0))
+x_var = tk.StringVar()
+combo_x = ttk.Combobox(root, textvariable=x_var, state="readonly")
+combo_x.pack()
 
-# z-axis dropdown menu
-tk.Label(root, text="Z Axis (optional)").pack(pady=(10, 0))
+tk.Label(root, text="Y Axis").pack(pady=(5, 0))
+y_var = tk.StringVar()
+combo_y = ttk.Combobox(root, textvariable=y_var, state="readonly")
+combo_y.pack()
+
+tk.Label(root, text="Z Axis (optional)").pack(pady=(5, 0))
 z_var = tk.StringVar(value="None")
-ttk.Combobox(root, textvariable=z_var, values=["None"] + columns, state="readonly").pack()
+combo_z = ttk.Combobox(root, textvariable=z_var, state="readonly")
+combo_z.pack()
 
-# manual plot buttons
-tk.Button(root, text="Make 2D Plot", command=make_2d_plot).pack(pady=10)
-plot3d_button = tk.Button(root, text="Make 3D Plot", command=make_3d_plot, state=tk.DISABLED)
-plot3d_button.pack()
+def update_3d_button(*args):
+    if simData is not None and z_var.get() != "None":
+        btn_3d.config(state=tk.NORMAL)
+    else:
+        btn_3d.config(state=tk.DISABLED)
+
 z_var.trace_add("write", update_3d_button)
 
-# multiplot settings
-def update_multiplot_button(*_):
-    count = added_y_listbox.size()
-    multi_button.config(state=tk.NORMAL if count >= 2 else tk.DISABLED)
+def make_2d_plot():
+    if simData is not None:
+        plot_2d(x_var.get(), y_var.get())
 
-def make_multiplot():
-    y_cols = list(added_y_listbox.get(0, tk.END))
-    plot_2d_multiplot(multi_x_var.get(), y_cols)
+def make_3d_plot():
+    if simData is not None:
+        plot_3d(x_var.get(), y_var.get(), z_var.get())
 
-# preset plotting buttons
+btn_2d = tk.Button(root, text="Make 2D Plot", command=make_2d_plot, state=tk.DISABLED)
+btn_2d.pack(pady=10)
+
+btn_3d = tk.Button(root, text="Make 3D Plot", command=make_3d_plot, state=tk.DISABLED)
+btn_3d.pack()
+
+# presets
 ttk.Separator(root, orient="horizontal").pack(fill="x", pady=15)
 tk.Label(root, text="Presets").pack()
-preset_var = tk.StringVar(value=preset_names[0])
-ttk.Combobox(root, textvariable=preset_var, values=preset_names, state="readonly").pack()
+preset_var = tk.StringVar()
+combo_preset = ttk.Combobox(root, textvariable=preset_var, state="readonly")
+combo_preset.pack()
 
-tk.Button(root, text="Load Preset", command=lambda: run_preset(preset_var.get())).pack(pady=10)
+btn_preset = tk.Button(root, text="Load Preset", command=lambda: run_preset(preset_var.get()), state=tk.DISABLED)
+btn_preset.pack(pady=10)
 
-# multiplot settings
+# multiplot
 ttk.Separator(root, orient="horizontal").pack(fill="x", pady=15)
 tk.Label(root, text="2D Multiplot").pack()
 
 tk.Label(root, text="X Axis").pack()
-multi_x_var = tk.StringVar(value=columns[0])
-ttk.Combobox(root, textvariable=multi_x_var, values=columns, state="readonly").pack()
+multi_x_var = tk.StringVar()
+combo_multi_x = ttk.Combobox(root, textvariable=multi_x_var, state="readonly")
+combo_multi_x.pack()
 
 tk.Label(root, text="Available Y Axis").pack()
-multi_y_var = tk.StringVar(value=columns[0])
-ttk.Combobox(root, textvariable=multi_y_var, values=columns, state="readonly").pack()
+multi_y_var = tk.StringVar()
+combo_multi_y = ttk.Combobox(root, textvariable=multi_y_var, state="readonly")
+combo_multi_y.pack()
 
 tk.Label(root, text="Multiplot Y Axes").pack()
 added_y_listbox = tk.Listbox(root, height=5)
 added_y_listbox.pack()
 
+def update_multiplot_button(*_):
+    count = added_y_listbox.size()
+    if simData is not None and count >= 2:
+        btn_multi.config(state=tk.NORMAL)
+    else:
+        btn_multi.config(state=tk.DISABLED)
+
 def add_multiplot_y():
+    if simData is None: return
     y = multi_y_var.get()
     existing = added_y_listbox.get(0, tk.END)
-    if y not in existing:
+    if y and y not in existing:
         added_y_listbox.insert(tk.END, y)
     update_multiplot_button()
 
@@ -220,14 +299,14 @@ def remove_multiplot_y():
         added_y_listbox.delete(idx)
     update_multiplot_button()
 
+def make_multiplot():
+    y_cols = list(added_y_listbox.get(0, tk.END))
+    plot_2d_multiplot(multi_x_var.get(), y_cols)
+
 tk.Button(root, text="Add Y Axis", command=add_multiplot_y).pack(pady=2)
 tk.Button(root, text="Remove Selected Y", command=remove_multiplot_y).pack(pady=2)
 
-multi_button = tk.Button(root, text="Make Multiplot", state=tk.DISABLED, command=make_multiplot)
-multi_button.pack(pady=5)
-
-
-
-
+btn_multi = tk.Button(root, text="Make Multiplot", state=tk.DISABLED, command=make_multiplot)
+btn_multi.pack(pady=5)
 
 root.mainloop()

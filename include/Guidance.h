@@ -48,14 +48,19 @@ private:
     // descent rates
     double breakingDescentRate = -45.0; // m/s
     double approachDescentRate = -18.0; // m/s
-    double lockVeclocityDescentRate = -7.0; // m/s
+    double lockVeclocityDescentRate = -4.0; // m/s
     double finalDescentRate = -1.4; // m/s
 
     // PID variables for corrective velocity controller
-    double Kp = 0.2;
-    double Kd = 1.8;
-    double xKi = 0.1;
+    double xKp = 0.2;
+    double yKp = 0.2;
+
+    double xKd = 1.8;
+    double yKd = 2.0;
+    
+    double xKi = 0.0;
     double yKi = 0.0;
+    
     double xError = 0.0;
     double yError = 0.0;
 

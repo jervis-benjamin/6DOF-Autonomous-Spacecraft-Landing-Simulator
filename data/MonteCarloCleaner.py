@@ -1,4 +1,5 @@
 # cleans monte_carlo folder of .bin and .parquet
+# this file is likely causing the terminal printout issue
 
 import os
 import glob
@@ -10,12 +11,12 @@ def clean_directory():
     
 
     if len(target_dir) < 20: 
-        print("SAFETY STOP: Path is too short, potentially dangerous.")
+        print("Path is too short, potentially dangerous.")
         return
 
     
     if "monte_carlo" not in target_dir:
-        print("SAFETY STOP: Target directory does not contain 'monte_carlo'. Aborting to protect files.")
+        print("Target directory does not contain 'monte_carlo', check again")
         return
 
     if not os.path.exists(target_dir):
@@ -34,11 +35,8 @@ def clean_directory():
     for f in files:
 
         if f.endswith(".bin") or f.endswith(".parquet"):
-            try:
-                os.remove(f)
-                deleted_count += 1
-            except OSError as e:
-                print(f"Error deleting {f}: {e.strerror}")
+            os.remove(f)
+            deleted_count += 1
     
     print(f"Successfully emptied monte_carlo folder")
 

@@ -29,7 +29,7 @@ double Guidance::X_correctiveVelocity(double dt, double position, double target,
     xError += error * dt;
     xError = clamp(xError, -30.0, 30.0);
 
-    double cmdVelocity = (Kp * error) + (xKi * xError) - (Kd * currVelocity); 
+    double cmdVelocity = (xKp * error) + (xKi * xError) - (xKd * currVelocity); 
 
     return cmdVelocity;
 }
@@ -40,7 +40,7 @@ double Guidance::Y_correctiveVelocity(double dt, double position, double target,
     yError += error * dt;
     yError = clamp(yError, -30.0, 30.0);
 
-    double cmdVelocity = (Kp * error) + (yKi * yError) - (Kd * currVelocity); 
+    double cmdVelocity = (yKp * error) + (yKi * yError) - (yKd * currVelocity); 
 
     return cmdVelocity;
 }
@@ -100,18 +100,22 @@ void Guidance::update(double dt){
             velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
-    } else if (currentAlt >= lockOrientationAlt){ // VELOCITY LOCK OUT PHASE
+    } else if (currentAlt >= lockOrientationAlt){ // LATERAL VELOCITY LOCK OUT PHASE
         guidanceState = 3.0;
         ignoreRoll = false;
-        velocitySetpoints.x() = 0.0;
-        velocitySetpoints.y() = 0.0;
+        velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
+        //velocitySetpoints.x() = 0.0;
+        //velocitySetpoints.y() = 0.0;
+        velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
         velocitySetpoints.z() = lockVeclocityDescentRate;
 
     } else { // FINAL DESCENT PHASE
         guidanceState = 4.0;
         ignoreRoll = false;
-        velocitySetpoints.x() = 0.0;
-        velocitySetpoints.y() = 0.0;
+        velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
+        //velocitySetpoints.x() = 0.0;
+        //velocitySetpoints.y() = 0.0;
+        velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
         velocitySetpoints.z() = finalDescentRate;
         //maintainOrientation = true;
 
