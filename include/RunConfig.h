@@ -26,7 +26,7 @@ public:
     RunConfig() : gen(rd()) {}
 
     bool monteCarloRun = true;
-    int runNum = 20; // only applies when monteCarloRun is true
+    int runNum = 100; // only applies when monteCarloRun is true
 
     struct SimInputs {
         double initialPropMass_mult = 1.0;

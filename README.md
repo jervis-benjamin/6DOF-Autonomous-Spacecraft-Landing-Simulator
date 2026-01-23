@@ -1,30 +1,19 @@
 # Overview 
 Simulating the autonomous landing of a spacecraft to meet trajectory and landing criterion, testing controller performance for systems such as thrust vector control (TVC) and reaction control system (RCS), and evaulating guidance algorithms to control various aspects of flight.
 
-## Project Breakdown
-- Physics:
-  - 6dof dynamics to calculate the spacecraft's state over time
-  - _Programmed in C++_
-- Controls:
-  - Logic that takes in state conditions and outputs force values to keep the spacecraft within trajectory and landing contraints
-  - _Programmed in C++_  
-- Data Representation:
-  - Visualizing the spacecraft's trajectory over time
-  - _Programmed in Python_
-
-## Current timeline
+## Current timeline (Version 1 Completed)
 1) **[Completed]** Create flat world with 6dof dynamics
 2) **[Completed]** Develop visualization tool for graphing trajectory
 3) **[Completed]** Develop propulsion mechanics (mass depletion, mass properties)
 4) **[Completed]** Design and implement controllers for TVC and RCS (full 6DoF control)
 5) **[Completed]** Develop guidance algorithm for full control stack functionality
 6) **[Completed]** Achieve controlled autonomous landing
-7) [_In progress]_ Add Monte-Carlo functionality
+7) **[Completed]** Add Monte-Carlo functionality
 
-### Tentative Additons:
+### Tentative Additons
+  - Transition from flat world physics to rotating sphere
   - Implement aerodynamics
   - Implement more advanced controller laws (ex. LQR, H-infinity, MPC)
-  - Transition from flat world physics to rotating sphere
 
 ## Resources Referenced  
 - Lunar Lander model obtained from NASA 3D Resources

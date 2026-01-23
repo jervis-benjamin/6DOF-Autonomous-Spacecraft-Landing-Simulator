@@ -39,8 +39,8 @@ private:
     double stopBreakingBurn = 500; // m end breaking phase once we are this close to the target      
     /* ALTITUDES */
     double approachPhaseAlt = 10000; // m (altitude at which the spacecraft decends at secondDecentRate velocity)
-    double lockVeclocityAlt = 1000; // m (altitude at which x and y velocity will be commanded to zero)
-    double lockOrientationAlt = 800; // m (altitude at which vehicle will be oriented level with the ground)
+    double beginTerminalPhaseAlt = 1000; // m (altitude at which vehicle velocity will descrease in preperation for landing)
+    double finalPhaseAlt = 800; // m (altitude at which vehicle velocity will dip below thresholds)
 
     double breakingVelocity = -50.3; // m/s
     double approachVelocity = -38.83; // m/s 
@@ -48,8 +48,8 @@ private:
     // descent rates
     double breakingDescentRate = -45.0; // m/s
     double approachDescentRate = -18.0; // m/s
-    double lockVeclocityDescentRate = -4.0; // m/s
-    double finalDescentRate = -1.4; // m/s
+    double terminalDescentRate1 = -4.0; // m/s
+    double terminalDescentRate2 = -1.4; // m/s
 
     // PID variables for corrective velocity controller
     double xKp = 0.2;

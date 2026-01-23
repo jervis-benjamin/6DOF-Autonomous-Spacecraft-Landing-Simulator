@@ -2,12 +2,18 @@
 // By Jervis Benjamin
 // Started September 2025
 
+// Version 1 finished January 2026 with:
+// - Full 6DoF dynamics and state variable evolution (for a flat world).
+// - Autonomous landing guidance-control stack.
+// - Thrust Vector Control and Reaction Control System implemented.
+// - Monte Carlo dispersion capabilities.
+// - Modeled the Apollo Lunar Lander upon descent.
+
 /*
 
 TODOs:
-- graph 3 sigma landing elipse
 - add IMU class (on and off errors) and add TVC and RCS errors
-
+- fix terminall printout messages for Monte Carlo runs
 - make sure to have descriptions for all functions (be more diligent on best practices)
 - (low priority) make all class functions optimized for speed (similar to how it is in Dynamics.h)
 

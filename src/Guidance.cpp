@@ -6,11 +6,6 @@ Owns:
 - Scheduling roll setpoint
 */
 
-/*
-as of now, the guidance class phase triggers are too dependant on the spacecraft's initial states. 
-later on, it would be key to implement guidance that works for a large range of initial states and is more robust
-*/
-
 #include <Eigen/Dense>
 
 #include "../include/Guidance.h"
@@ -84,7 +79,7 @@ void Guidance::update(double dt){
             velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
-    } else if (currentAlt >= lockVeclocityAlt){ // APPROACH PHASE
+    } else if (currentAlt >= beginTerminalPhaseAlt){ // APPROACH PHASE
         guidanceState = 2.0;
         
         ignoreRoll = false;
@@ -100,14 +95,14 @@ void Guidance::update(double dt){
             velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
-    } else if (currentAlt >= lockOrientationAlt){ // LATERAL VELOCITY LOCK OUT PHASE
+    } else if (currentAlt >= finalPhaseAlt){ // LATERAL VELOCITY LOCK OUT PHASE
         guidanceState = 3.0;
         ignoreRoll = false;
         velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         //velocitySetpoints.x() = 0.0;
         //velocitySetpoints.y() = 0.0;
         velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
-        velocitySetpoints.z() = lockVeclocityDescentRate;
+        velocitySetpoints.z() = terminalDescentRate1;
 
     } else { // FINAL DESCENT PHASE
         guidanceState = 4.0;
@@ -116,7 +111,7 @@ void Guidance::update(double dt){
         //velocitySetpoints.x() = 0.0;
         //velocitySetpoints.y() = 0.0;
         velocitySetpoints.y() = Y_correctiveVelocity(dt, currentCrossRange, landingTarget.y(), dynamics.velocity.y());
-        velocitySetpoints.z() = finalDescentRate;
+        velocitySetpoints.z() = terminalDescentRate2;
         //maintainOrientation = true;
 
     }

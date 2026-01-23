@@ -28,10 +28,10 @@ void RunConfig::getDispersions(){
     uniform_real_distribution<double> initialPropMass_multiplier(0.8, 1.0);
     //simInputs.initialPropMass_mult = initialPropMass_multiplier(gen);
 
-    normal_distribution<double> initialPosX_adder(0, 50);
+    normal_distribution<double> initialPosX_adder(0, 100);
     simInputs.initialPosX_add = initialPosX_adder(gen);
 
-    normal_distribution<double> initialPosY_adder(0, 50);
+    normal_distribution<double> initialPosY_adder(0, 100);
     simInputs.initialPosY_add = initialPosY_adder(gen);
     
     normal_distribution<double> initialPosZ_adder(0, 100);
