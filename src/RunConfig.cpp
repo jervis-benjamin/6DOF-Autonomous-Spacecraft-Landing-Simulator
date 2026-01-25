@@ -25,16 +25,19 @@ void RunConfig::getDispersions(){
     // comment out the line where the simInputs variable gets initialized to skip that dispersion
     // ex. comment this out -> simInputs.initialVar_mult = initialVar_multiplier(gen;)
 
-    uniform_real_distribution<double> initialPropMass_multiplier(0.8, 1.0);
-    //simInputs.initialPropMass_mult = initialPropMass_multiplier(gen);
+    normal_distribution<double> initialPropMass_adder(0.0, 50.0);
+    simInputs.initialPropMass_add = initialPropMass_adder(gen);
 
-    normal_distribution<double> initialPosX_adder(0, 100);
+    uniform_real_distribution<double> thrust_multiplier(0.995, 1.0);
+    simInputs.thrust_mult = thrust_multiplier(gen);
+
+    normal_distribution<double> initialPosX_adder(0, 50);
     simInputs.initialPosX_add = initialPosX_adder(gen);
 
-    normal_distribution<double> initialPosY_adder(0, 100);
+    normal_distribution<double> initialPosY_adder(0, 50);
     simInputs.initialPosY_add = initialPosY_adder(gen);
     
-    normal_distribution<double> initialPosZ_adder(0, 100);
-    //simInputs.initialPosZ_add = initialPosZ_adder(gen);
+    normal_distribution<double> initialPosZ_adder(0, 50);
+    simInputs.initialPosZ_add = initialPosZ_adder(gen);
 
 }

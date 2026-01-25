@@ -29,7 +29,9 @@ public:
     int runNum = 100; // only applies when monteCarloRun is true
 
     struct SimInputs {
-        double initialPropMass_mult = 1.0;
+        double initialPropMass_add = 0.0;
+        double thrust_mult = 1.0;
+
         double initialPosX_add = 0.0;
         double initialPosY_add = 0.0;
         double initialPosZ_add = 0.0;

@@ -178,29 +178,23 @@ class LandingHeatmapApp:
     def _draw_confidence_ellipse(self, x, y, ax, n_std=3.0, **kwargs):
         # calculates ellipse
 
-        if len(x) < 2: return
+        if len(x) < 2:  
+            return
 
         # covariance matrix for landing elipse
         cov = np.cov(x, y)
-        lambda_, v = np.linalg.eig(cov)
-        lambda_ = np.sqrt(lambda_)
-        width = lambda_[0] * n_std * 2
-        height = lambda_[1] * n_std * 2
-     
-        if lambda_[0] > lambda_[1]:
-            angle = np.degrees(np.arctan2(v[1, 0], v[0, 0]))
-            width = 2 * n_std * lambda_[0]
-            height = 2 * n_std * lambda_[1]
-        else:
-            angle = np.degrees(np.arctan2(v[1, 1], v[0, 1]))
-            width = 2 * n_std * lambda_[1]
-            height = 2 * n_std * lambda_[0]
-
         mean_x, mean_y = np.mean(x), np.mean(y)
+        vals, vecs = np.linalg.eigh(cov)
+        order = vals.argsort()[::-1]
+        vals = vals[order]
+        vecs = vecs[:, order]
 
+        # width, height, and major axis of ellipse
+        width, height = 2 * n_std * np.sqrt(vals)
+        angle = np.degrees(np.arctan2(vecs[1, 0], vecs[0, 0]))
+     
         # generate ellipse
-        ellipse = Ellipse((mean_x, mean_y), width=width, height=height, angle=angle, facecolor='none', linestyle='--', linewidth=2, **kwargs)
-        
+        ellipse = Ellipse((mean_x, mean_y), width=width, height=height, angle=angle, facecolor='none', linestyle='--', linewidth=2,**kwargs)
         ax.add_patch(ellipse)
         
         # legend

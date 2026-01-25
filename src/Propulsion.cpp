@@ -43,7 +43,6 @@ void Propulsion::update(double dt, Eigen::Vector3d guidanceVelocity){
     Eigen::Vector3d idealAccel = runVelocityController(dt, guidanceVelocity);
 
     
-
     // since the controller outputs the net kinematic desired acceleration, we will need to seperately compute the acceration needed by the engine
     Eigen::Vector3d gravity{0.0, 0.0, -world.getGravitationalAccel(dynamics.position.z())};
     Eigen::Vector3d thrustAccel = idealAccel - gravity;
@@ -67,6 +66,9 @@ void Propulsion::update(double dt, Eigen::Vector3d guidanceVelocity){
     }else{
         thrustEngine = maxThrust;
     }
+
+    // apply thrust multiplier (for Monte-Carlo dispersions)}
+    thrustEngine *= thrustMultiplier;
 
     // check if there is still propellant left
     if(spacecraft.propellantMass <= 0.0){

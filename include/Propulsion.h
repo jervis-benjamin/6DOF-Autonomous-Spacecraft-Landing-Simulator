@@ -51,6 +51,8 @@ public:
     double thrustEngine = 0.0; // N (actual thrust)
     Eigen::Vector3d idealthrustDirection{1.0, 0.0, 0.0}; // in the world frame
 
+    double thrustMultiplier = 1.0;
+
     Propulsion(Spacecraft& sc, const Dynamics& dn, const World& w);
     
     void update(double dt, Eigen::Vector3d guidanceVelocity);

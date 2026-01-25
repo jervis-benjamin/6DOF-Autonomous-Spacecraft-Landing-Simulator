@@ -56,10 +56,10 @@ private:
     double yKp = 0.2;
 
     double xKd = 1.8;
-    double yKd = 2.0;
+    double yKd = 1.8;
     
-    double xKi = 0.0;
-    double yKi = 0.0;
+    double xKi = 0.0001;
+    double yKi = 0.003;
     
     double xError = 0.0;
     double yError = 0.0;

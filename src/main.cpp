@@ -78,7 +78,7 @@ int main() {
         /* 
         ======================================
         |        Configure Data File         |
-        ======================================
+        ====================================== 
         */
 
         cout << "============================================\n" << endl;
@@ -131,7 +131,7 @@ int main() {
         // spacecraft dispersions
         if (runConfig.monteCarloRun) {
 
-            spacecraft.propellantMass *= runConfig.simInputs.initialPropMass_mult;
+            spacecraft.propellantMass += runConfig.simInputs.initialPropMass_add;
             spacecraft.initialPropellantMass = spacecraft.propellantMass;
             spacecraft.updateMassProperties();
 
@@ -144,11 +144,18 @@ int main() {
         Dynamics dynamics(spacecraft, world);
         Guidance guidance(spacecraft, dynamics, world);
         Propulsion propulsion(spacecraft, dynamics, world);
+
+        // propulsion dispersions
+        if (runConfig.monteCarloRun){
+            propulsion.thrustMultiplier = runConfig.simInputs.thrust_mult;
+        }
+        
         TVC_Controller tvc(spacecraft, dynamics, propulsion);
         RCS_Controller rcs(spacecraft, dynamics);
 
         // initialize input variables (Monte Carlo dispersed values)
         double mc_initialPropMass = spacecraft.initialPropellantMass;
+        double mc_thrustMult = runConfig.simInputs.thrust_mult;
         double mc_initialPosX = spacecraft.initialPosition.x();
         double mc_initialPosY = spacecraft.initialPosition.y();
         double mc_initialPosZ = spacecraft.initialPosition.z();
@@ -270,14 +277,10 @@ int main() {
             rec.guidanceState = guidance.guidanceState;
 
             rec.mc_initialPropMass = mc_initialPropMass;
-
+            rec.mc_thrustMult = mc_thrustMult;
             rec.mc_initialPos[0] = mc_initialPosX;
             rec.mc_initialPos[1] = mc_initialPosY;
             rec.mc_initialPos[2] = mc_initialPosZ;
-
-            /*
-            maybe add initial dispersed value as more columns
-            */
 
             outFile.write(reinterpret_cast<const char*>(&rec), sizeof(RecordData));
 

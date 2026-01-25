@@ -95,7 +95,7 @@ void Guidance::update(double dt){
             velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
         }
 
-    } else if (currentAlt >= finalPhaseAlt){ // LATERAL VELOCITY LOCK OUT PHASE
+    } else if (currentAlt >= finalPhaseAlt){ // BEGINNING OF TERMINAL DESCENT
         guidanceState = 3.0;
         ignoreRoll = false;
         velocitySetpoints.x() = X_correctiveVelocity(dt, currentRange, landingTarget.x(), dynamics.velocity.x());
