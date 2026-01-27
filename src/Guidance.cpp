@@ -82,7 +82,7 @@ void Guidance::update(double dt){
     } else if (currentAlt >= beginTerminalPhaseAlt){ // APPROACH PHASE
         guidanceState = 2.0;
         
-        ignoreRoll = false;
+        ignoreRoll = true;
 
         velocitySetpoints.z() = approachDescentRate;
 

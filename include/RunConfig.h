@@ -25,7 +25,7 @@ public:
     // seed random engine
     RunConfig() : gen(rd()) {}
 
-    bool monteCarloRun = true;
+    bool monteCarloRun = false;
     int runNum = 100; // only applies when monteCarloRun is true
 
     struct SimInputs {
