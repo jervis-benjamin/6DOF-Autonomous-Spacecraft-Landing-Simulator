@@ -1,7 +1,7 @@
 # Overview 
 Simulating the autonomous landing of a spacecraft to meet trajectory and landing criterion, testing controller performance for systems such as thrust vector control (TVC) and reaction control system (RCS), and evaulating guidance algorithms to control various aspects of flight.
 
-## Current timeline (Version 1 Completed)
+## Current timeline 
 1) **[Completed]** Create flat world with 6dof dynamics
 2) **[Completed]** Develop visualization tool for graphing trajectory
 3) **[Completed]** Develop propulsion mechanics (mass depletion, mass properties)
